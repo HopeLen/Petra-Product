@@ -1,0 +1,58 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.lcov
+
+# Build output
+dist/
+build/
+out/
+
+# Dependency directories
+bower_components/
+
+# Optional npm cache
+.npm
+.npmrc
+
+# dotenv environment variables
+.env
+.env.*.local
+
+# Editor-specific
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Parcel / Next.js / Other bundlers
+.cache/
+.next/
+.nuxt/
+out/
+storybook-static/
+
+# Svelte / Vite
+.svelte-kit/
+vite.config.ts.timestamp*
