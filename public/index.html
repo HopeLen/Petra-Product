@@ -15,6 +15,9 @@
         <div class="section-container">
             <h1 class="title">אזורים</h1>
             <div id="section-container"></div>
+
+            <!-- PRINTING TEST DELETE LATER -->
+            <button onclick="testPrint()">PRINT TEST</div>
         </div>
     </div>
 
@@ -23,5 +26,18 @@
 
 
     <script src="index.js"></script>
+
+<script>
+  function testPrint() {
+    sendPrintRequest({
+      printerId: 2,
+      tableId: 10,
+      items: [
+        { name: "Burger", amount: 2 },
+        { name: "Fries", amount: 1 }
+      ]
+    });
+  }
+</script>
 </body>
 </html>

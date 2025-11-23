@@ -1,27 +1,30 @@
+// Modules
 const express = require("express");
 const mariadb = require("mariadb");
 const path = require("path");
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
+const multer = require("multer")
+const printers = require("./printers/printer")
+const { buildOrderReceipt, printToPrinter } = require("./printers/printService");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-
-const pool = mariadb.createPool({
-  host: "127.0.0.1",         // or your server IP
-  port: "3306",
-  user: "root",           // MariaDB username
-  password: "root",   // MariaDB password
-  database: "petra_test",   // Your database name
-  connectionLimit: 5,
-  charset: "utf8mb4"         // important for Hebrew support
-});
-
-
+const upload = multer({ dest: "uploads/" });
 
 app.use(express.static("public"));
 
+// Database connection
+const pool = mariadb.createPool({
+  host: "127.0.0.1",
+  port: "3306",
+  user: "root",
+  password: "root",
+  database: "petra_test",
+  connectionLimit: 5,
+  charset: "utf8mb4"
+});
 
+// Fetches all tables with a specific section ID
 app.get("/api/get-tables-section/:sectionId", async (req, res) => {
   let conn;
   try {
@@ -45,10 +48,7 @@ app.get("/api/get-tables-section/:sectionId", async (req, res) => {
   }
 });
 
-
-
-
-
+// Fetches all unique table section IDs and their amount
 app.get("/api/get-table-sections", async (req, res) => {
   try {
     const rows = await pool.query("SELECT DISTINCT section_id FROM tables");
@@ -70,14 +70,7 @@ app.get("/api/get-table-sections", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
+// Manunal database connection test [DELETE LATER]
 app.get("/test-db", async (req, res) => {
   let conn;
   try {
@@ -93,6 +86,28 @@ app.get("/test-db", async (req, res) => {
 });
 
 
+
+app.post("/api/print-order", async (req, res) => {
+  try {
+    const { printerId, tableId, items } = req.body;
+
+    const printer = printers.find(p => p.id === printerId);
+    if (!printer) return res.status(404).json({ error: "Printer not found" });
+
+    const time = new Date().toLocaleString();
+    const receipt = buildOrderReceipt({ tableId, items, time });
+
+    await printToPrinter(printer, receipt);
+
+    res.json({ success: true, message: "Print sent" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Printing failed", details: err.message });
+  }
+});
+
+
+// Server creation
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
