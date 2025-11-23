@@ -1,0 +1,11 @@
+.parent{
+    display: flex;
+    flex-direction: row;
+    width: 50vw;
+    justify-self: center;
+}
+
+.main-box{
+    height: 70vh;
+    margin: 5px;
+}

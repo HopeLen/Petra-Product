@@ -1,5 +1,5 @@
 async function fetchTables(sectionId) {
-  const response = await fetch(`/api/get-tables-section/${sectionId}`);
+  const response = await fetch(`/api/get-tables-from-section/${sectionId}`);
   const data = await response.json();
   const container = document.getElementById("container");
   container.innerHTML = "";
@@ -8,6 +8,17 @@ async function fetchTables(sectionId) {
   data.forEach(row => {
     const div = document.createElement("div");
     div.className = "box";
+    if(row.status != "LOCKED"){
+      div.onclick = function() {
+        console.log("Opening the table: " + row.id);
+        tableStatusChange(row.id, "LOCKED")
+        window.location.href = `/table/table.html?id=${row.id}`;
+      };
+    } else{
+      div.onclick = function(){
+        alert("מישהו כבר נמצא בשולחן... נסו שנית אחר כך")
+      }
+    }
 
     // Change color based on status
     switch(row.status) {
@@ -19,6 +30,9 @@ async function fetchTables(sectionId) {
         break;
       case "BILLED":
         div.classList.add("status-billed");
+        break;
+      case "LOCKED":
+        div.classList.add("status-locked")
         break;
       default:
         div.style.backgroundColor = "lightblue";
@@ -57,7 +71,21 @@ async function fetchSections() {
 }
 
 
-
+async function tableStatusChange(tableID, targetStatus) {
+try{
+  await fetch("/api/set-table-status",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      tableID,
+      targetStatus
+    })
+  })
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {

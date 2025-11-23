@@ -20,9 +20,11 @@ const pool = mariadb.createPool({
 
 
 app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
-app.get("/api/get-tables-section/:sectionId", async (req, res) => {
+app.get("/api/get-tables-from-section/:sectionId", async (req, res) => {
   let conn;
   try {
     const sectionId = Number(req.params.sectionId);
@@ -47,7 +49,34 @@ app.get("/api/get-tables-section/:sectionId", async (req, res) => {
 
 
 
+app.post("/api/set-table-status", async (req,res) =>{
+  let conn;
+  const {tableID, targetStatus} = req.body;
+  if (!tableID || !targetStatus) {
+    return res.status(400).json({ error: "Missing tableID or targetStatus" });
+  }
+  try{
+    conn = await pool.getConnection();
+    console.log(tableID, targetStatus);
+    
+    const result = await conn.query(
+      "UPDATE tables SET status = ? WHERE id = ?",
+      [targetStatus, tableID]
+    );
 
+    res.json({ success: true, changedRows: result.affectedRows });
+
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+  finally {
+    if (conn) conn.release();
+  }
+
+
+});
 
 app.get("/api/get-table-sections", async (req, res) => {
   try {
@@ -91,6 +120,10 @@ app.get("/test-db", async (req, res) => {
     if (conn) conn.release();
   }
 });
+
+
+
+
 
 
 app.listen(PORT, () => {
