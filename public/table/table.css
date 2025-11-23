@@ -8,4 +8,10 @@
 .main-box{
     height: 70vh;
     margin: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content:flex-start;
+    align-items:flex-end;
+    font-size: 0.5em;
 }
+

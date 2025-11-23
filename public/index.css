@@ -48,14 +48,15 @@
 
 
 .title {
-  margin-bottom: 10px; /* space between title and next elements */
+  margin-bottom: 10px;
+  text-decoration: underline
 }
 
 .parent {
   display: flex;
-  justify-content: center; /* horizontal center */
-  align-items: center;     /* vertical center */
-  height: 98.7vh;           /* full viewport height */
+  justify-content: center;
+  align-items: center;
+  height: 98.7vh;
   font-size: 3em;
   flex-direction: column;
 }
