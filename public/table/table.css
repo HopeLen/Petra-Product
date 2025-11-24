@@ -1,17 +1,29 @@
-.parent{
-    display: flex;
-    flex-direction: row;
-    width: 50vw;
-    justify-self: center;
+.parent {
+  display: flex;
+  flex-direction: row;
+  width: 50vw;
+  justify-self: center;
 }
 
-.main-box{
-    height: 70vh;
-    margin: 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content:flex-start;
-    align-items:flex-end;
-    font-size: 0.5em;
+.main-box {
+  height: 70vh;
+  margin: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  font-size: 0.5em;
 }
 
+#current-order {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 20px);
+}
+
+#current-order li {
+  display: flex;
+  justify-content: space-between;
+  direction: rtl;
+  padding: 4px 0;
+}

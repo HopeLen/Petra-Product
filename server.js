@@ -87,13 +87,16 @@ app.get("/api/get-table-sections", async (req, res) => {
   }
 });
 
-app.get("/api/get-table-order:tableID", async (req, res) => {
-  const tableID = Number(req.params.tableID);
+app.get("/api/get-table-order/:tableID", async (req, res) => {
+  const tableID = req.params.tableID;
+  console.log(tableID);
   try {
-    const order = await pool.query("SELECT order FROM tables WHERE id = ?", [
-      tableID,
-    ]);
-    console.log("Query result:", order);
+    const [order] = await pool.query(
+      "SELECT `order` FROM tables WHERE id = ?",
+      [tableID]
+    );
+
+    //console.log("Query result:", order);
     res.json(order);
   } catch (err) {
     console.error("Database error:", err);
@@ -110,6 +113,35 @@ app.get("/test-db", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Database connection failed: " + err.message);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+app.post(`/api/get-items`, async (req, res) => {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const { order } = req.body;
+    console.log(order);
+    const ids = order.order.map((item) => item.itemID);
+    console.log(ids);
+    if (ids.length === 0) {
+      return res.json([]);
+    }
+    const placeholders = ids.map(() => "?").join(",");
+    const query = `
+      SELECT id, name, price
+      FROM menu
+      WHERE id IN (${placeholders})
+    `;
+    const rows = await conn.execute(query, ids);
+    console.log(rows);
+    console.log(Array.isArray(rows));
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   } finally {
     if (conn) conn.release();
   }
