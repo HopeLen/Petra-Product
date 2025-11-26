@@ -25,7 +25,7 @@ async function getOrder(tableID) {
     console.log(menuItem);
     console.log(item);
     li.innerHTML = `
-    <span>${menuItem.amount}x ${item.name}</span>
+    <span>x${menuItem.amount} ${item.name}</span>
     <span>${item.price*menuItem.amount}</span>
   `;
     ul.append(li);
