@@ -4,14 +4,14 @@ async function fetchTables(sectionId) {
   const data = await response.json();
   const container = document.getElementById("container");
   container.innerHTML = "";
-  console.log(data)
+  console.log(data);
 
-  data.forEach(row => {
+  data.forEach((row) => {
     const div = document.createElement("div");
     div.className = "box";
 
     // Change color based on status
-    switch(row.status) {
+    switch (row.status) {
       case "OPEN":
         div.classList.add("status-open");
         break;
@@ -41,15 +41,14 @@ async function fetchSections() {
   const customTextMap = {
     0: "טרסה ש",
     1: "טרסה פ",
-    2: "בפנים חדש"
+    2: "בפנים חדש",
   };
 
-  data.sectionIds.forEach(id => {
+  data.sectionIds.forEach((id) => {
     const box = document.createElement("div");
     box.classList.add("section-box");
 
-
-    box.textContent = customTextMap[id]
+    box.textContent = customTextMap[id];
 
     // Add onclick event to call fetchTables with the section ID
     box.onclick = () => fetchTables(id);
@@ -58,17 +57,15 @@ async function fetchSections() {
   });
 }
 
-
-
 //Printing request (Data type = JSON)
 async function sendPrintRequest(orderData) {
   try {
     const response = await fetch("/api/print-order", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(orderData)
+      body: JSON.stringify(orderData),
     });
 
     const result = await response.json();
@@ -87,14 +84,6 @@ async function sendPrintRequest(orderData) {
   }
 }
 
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   fetchSections();
 });
-
-
-  

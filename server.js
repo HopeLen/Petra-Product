@@ -3,14 +3,18 @@ const express = require("express");
 const mariadb = require("mariadb");
 const path = require("path");
 const mysql = require("mysql2/promise");
-const multer = require("multer")
-const printers = require("./printers/printer")
-const { buildOrderReceipt, printToPrinter } = require("./printers/printService");
+const multer = require("multer");
+const printers = require("./printers/printer");
+const {
+  buildOrderReceipt,
+  printToPrinter,
+} = require("./printers/printService");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const upload = multer({ dest: "uploads/" });
 
+app.use(express.json());
 app.use(express.static("public"));
 
 // Database connection
@@ -21,7 +25,7 @@ const pool = mariadb.createPool({
   password: "root",
   database: "petra_test",
   connectionLimit: 5,
-  charset: "utf8mb4"
+  charset: "utf8mb4",
 });
 
 // Fetches all tables with a specific section ID
@@ -55,15 +59,14 @@ app.get("/api/get-table-sections", async (req, res) => {
     console.log("Query result:", rows);
 
     // rows is already an array of objects
-    const sectionIds = rows.map(r => Number(r.section_id));
+    const sectionIds = rows.map((r) => Number(r.section_id));
 
     console.log("Section IDs to send:", sectionIds);
 
     res.json({
       uniqueSectionCount: sectionIds.length,
-      sectionIds
+      sectionIds,
     });
-
   } catch (err) {
     console.error("Database error:", err);
     res.status(500).json({ error: err.message });
@@ -85,17 +88,17 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-
-
 app.post("/api/print-order", async (req, res) => {
   try {
     const { printerId, tableId, items } = req.body;
-
-    const printer = printers.find(p => p.id === printerId);
+    console.log(printerId, tableId, items);
+    const printer = printers.find((p) => p.id === printerId);
     if (!printer) return res.status(404).json({ error: "Printer not found" });
 
     const time = new Date().toLocaleString();
     const receipt = buildOrderReceipt({ tableId, items, time });
+
+    console.log(receipt);
 
     await printToPrinter(printer, receipt);
 
@@ -106,8 +109,7 @@ app.post("/api/print-order", async (req, res) => {
   }
 });
 
-
 // Server creation
 app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
