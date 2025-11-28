@@ -27,7 +27,7 @@ app.get("/api/get-tables-from-section/:sectionId", async (req, res) => {
     conn = await pool.getConnection();
 
     const rows = await conn.query(
-      "SELECT id, status FROM `tables` WHERE section_id = ?",
+      "SELECT id, location, status FROM `tables` WHERE section_id = ?",
       [sectionId]
     );
 

@@ -1,47 +1,49 @@
 async function fetchTables(sectionId) {
   const response = await fetch(`/api/get-tables-from-section/${sectionId}`);
   const data = await response.json();
-  const container = document.getElementById("container");
-  container.innerHTML = "";
   console.log(data);
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  createGrid(6, 6);
 
   data.forEach((row) => {
-    const div = document.createElement("div");
-    div.className = "box";
+    const container = document.getElementById(row.location);
 
-    //if(row.status != "LOCKED"){
-    div.onclick = function () {
+    container.textContent = "";
+    container.className = "";
+    container.classList.add("cell");
+
+    container.dataset.tableId = row.id;
+
+    container.onclick = function () {
+      //if (row.status !== "LOCKED") {
       console.log("Opening the table: " + row.id);
-      //tableStatusChange(row.id, "LOCKED");
       window.location.href = `/table/table.html?id=${row.id}`;
+      //} else {
+      //alert("מישהו כבר נמצא בשולחן... נסו שנית אחר כך");
+      //}
     };
-    /*
-    } else{
-      div.onclick = function(){
-        alert("מישהו כבר נמצא בשולחן... נסו שנית אחר כך")
-      }
-    }
-*/
-    // Change color based on status
+    console.log(row.status);
+
     switch (row.status) {
       case "OPEN":
-        div.classList.add("status-open");
+        container.classList.add("status-open");
         break;
       case "TAKEN":
-        div.classList.add("status-taken");
+        container.classList.add("status-taken");
         break;
       case "BILLED":
-        div.classList.add("status-billed");
+        container.classList.add("status-billed");
         break;
       case "LOCKED":
-        div.classList.add("status-locked");
+        container.classList.add("status-locked");
         break;
       default:
-        div.style.backgroundColor = "lightblue";
+        container.style.backgroundColor = "lightblue";
     }
 
-    div.textContent = row.id; // show id
-    container.appendChild(div);
+    // Display row ID inside container
+    container.textContent = row.id;
   });
 }
 
@@ -64,7 +66,6 @@ async function fetchSections() {
 
     box.textContent = customTextMap[id];
 
-    // Add onclick event to call fetchTables with the section ID
     box.onclick = () => fetchTables(id);
 
     container.appendChild(box);
@@ -87,6 +88,23 @@ async function tableStatusChange(tableID, targetStatus) {
   }
 }
 
+function createGrid(cols, rows) {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = ""; // clear previous cells
+  grid.style.setProperty("--cols", cols);
+  grid.style.setProperty("--rows", rows);
+
+  for (let y = 1; y <= rows; y++) {
+    for (let x = 1; x <= cols; x++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.id = `${x}-${y}`;
+      grid.appendChild(cell);
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  createGrid(6, 6);
   fetchSections();
 });

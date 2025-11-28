@@ -20,6 +20,15 @@ body {
   font-size: 2em;
 }
 
+.cell {
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 1px solid #aaa;
+}
+
 /* Status colors */
 .status-open {
   background-color: green;
@@ -60,7 +69,7 @@ body {
 .title {
   margin-bottom: 10px;
   text-decoration: underline;
-  
+
 }
 
 /* Page container */
@@ -78,6 +87,9 @@ body {
   background-color: aqua;
 }
 
+
+
+
 /* Wrapping container */
 #container,
 #section-container {
@@ -85,4 +97,13 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  gap: 6px;
+  width: 100%;
+  height: 100%;
 }
