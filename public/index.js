@@ -12,7 +12,7 @@ async function fetchTables(sectionId) {
     //if(row.status != "LOCKED"){
     div.onclick = function () {
       console.log("Opening the table: " + row.id);
-      tableStatusChange(row.id, "LOCKED");
+      //tableStatusChange(row.id, "LOCKED");
       window.location.href = `/table/table.html?id=${row.id}`;
     };
     /*
