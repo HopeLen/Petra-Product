@@ -4,7 +4,21 @@ async function fetchTables(sectionId) {
   console.log(data);
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
-  createGrid(6, 6);
+
+  let maxCol = 5;
+  let maxRow = 5;
+  data.forEach((row) => {
+    const [colNum, rowNum] = row.location.split("-").map(Number);
+
+    if (colNum > maxCol) {
+      maxCol = colNum;
+    }
+    if (rowNum > maxRow) {
+      maxRow = rowNum;
+    }
+  });
+  console.log(maxCol, maxRow);
+  createGrid(maxCol, maxRow);
 
   data.forEach((row) => {
     const container = document.getElementById(row.location);
@@ -105,6 +119,5 @@ function createGrid(cols, rows) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  createGrid(6, 6);
   fetchSections();
 });
