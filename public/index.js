@@ -25,7 +25,7 @@ async function fetchTables(sectionId) {
 
     container.textContent = "";
     container.className = "";
-    container.classList.add("cell");
+    container.classList.add("card");
 
     container.dataset.tableId = row.id;
 
@@ -65,7 +65,7 @@ async function fetchSections() {
   const response = await fetch("/api/get-table-sections");
   const data = await response.json();
   const container = document.getElementById("section-container");
-  container.innerHTML = ""; // clear previous boxes
+  container.innerHTML = "";
   console.log(data);
 
   const customTextMap = {
@@ -76,6 +76,7 @@ async function fetchSections() {
 
   data.sectionIds.forEach((id) => {
     const box = document.createElement("div");
+    box.classList.add("card");
     box.classList.add("section-box");
 
     box.textContent = customTextMap[id];
@@ -111,7 +112,7 @@ function createGrid(cols, rows) {
   for (let y = 1; y <= rows; y++) {
     for (let x = 1; x <= cols; x++) {
       const cell = document.createElement("div");
-      cell.classList.add("cell");
+      cell.classList.add("card");
       cell.id = `${x}-${y}`;
       grid.appendChild(cell);
     }
