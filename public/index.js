@@ -120,5 +120,12 @@ function createGrid(cols, rows) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      // Page is coming from the bfcache
+      window.location.reload();
+    }
+  });
+
   fetchSections();
 });

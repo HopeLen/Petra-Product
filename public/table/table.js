@@ -19,17 +19,26 @@ async function getOrder(tableID) {
 
   console.log(items);
 
+  appendToList(items, order, ul);
+}
+
+function appendToList(items, order, ul) {
   items.forEach((item) => {
     const li = document.createElement("li");
     const menuItem = order.order.find((m) => m.itemID === item.id);
     console.log(menuItem);
     console.log(item);
     li.innerHTML = `
-    <span>x${menuItem.amount} ${item.name}</span>
-    <span>${item.price*menuItem.amount}</span>
+    <span>X${menuItem.amount} ${item.name}</span>
+    <span>${item.price * menuItem.amount}₪</span>
   `;
     ul.append(li);
   });
+}
+
+function getInfo(tableID) {
+  const info = document.getElementById("information");
+  info.textContent = "מספר שולחן: " + tableID;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,4 +48,5 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log(tableID);
 
   getOrder(tableID);
+  getInfo(tableID);
 });
