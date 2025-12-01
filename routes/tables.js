@@ -79,4 +79,8 @@ router.get("/get-table-order/:tableID", async (req, res) => {
   }
 });
 
+router.get("/get-table-section-map", async (req, res) => {
+  res.json(require("../assets/maps/table-section-map.json"));
+});
+
 module.exports = router;

@@ -41,6 +41,14 @@ function getInfo(tableID) {
   info.textContent = "מספר שולחן: " + tableID;
 }
 
+
+async function getMenu() {
+  
+}
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const tableID = params.get("id");
@@ -49,4 +57,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   getOrder(tableID);
   getInfo(tableID);
+  getMenu()
 });

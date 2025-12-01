@@ -68,16 +68,10 @@ async function fetchSections() {
   container.innerHTML = "";
   console.log(data);
 
-  const customTextMap = {
-    0: "Hookah",
-    1: "בפנים חדש",
-    2: "טרסה",
-    3: "משלוחים",
-    4: "עובדים",
-    5: "רזרבה",
-    6: "A"
-  };
+  const customTextMapResponse = await fetch("/api/get-table-section-map");
+  const customTextMap = await customTextMapResponse.json();
 
+  
   data.sectionIds.forEach((id) => {
     const box = document.createElement("div");
     box.classList.add("card");
