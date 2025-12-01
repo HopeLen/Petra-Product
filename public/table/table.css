@@ -25,7 +25,6 @@
   margin:-10px;
   border-radius: 10px;
   backdrop-filter: blur(1px);
-  background: rgba(217, 217, 217, 0.58);
 }
 
 #current-order li {
@@ -36,6 +35,7 @@
   margin-right: 15px;
   padding: 10px 6px;
   border-radius: 10px;
-  background: #efe9e2;
+  background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid black;
 }
