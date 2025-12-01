@@ -69,9 +69,13 @@ async function fetchSections() {
   console.log(data);
 
   const customTextMap = {
-    0: "טרסה ש",
-    1: "טרסה פ",
-    2: "בפנים חדש",
+    0: "Hookah",
+    1: "בפנים חדש",
+    2: "טרסה",
+    3: "משלוחים",
+    4: "עובדים",
+    5: "רזרבה",
+    6: "A"
   };
 
   data.sectionIds.forEach((id) => {
@@ -109,7 +113,7 @@ function createGrid(cols, rows) {
   grid.style.setProperty("--cols", cols);
   grid.style.setProperty("--rows", rows);
 
-  for (let y = 1; y <= rows; y++) {
+  for (let y = rows; y >= 1; y--) {
     for (let x = 1; x <= cols; x++) {
       const cell = document.createElement("div");
       cell.classList.add("card");

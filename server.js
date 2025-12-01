@@ -69,7 +69,9 @@ app.post("/api/set-table-status", async (req, res) => {
 
 app.get("/api/get-table-sections", async (req, res) => {
   try {
-    const rows = await pool.query("SELECT DISTINCT section_id FROM tables");
+    const rows = await pool.query(
+      "SELECT DISTINCT section_id FROM tables ORDER BY section_id ASC"
+    );
     console.log("Query result:", rows);
 
     // rows is already an array of objects
