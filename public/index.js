@@ -17,6 +17,7 @@ async function fetchTables(sectionId) {
       maxRow = rowNum;
     }
   });
+
   console.log(maxCol, maxRow);
   createGrid(maxCol, maxRow);
 
@@ -26,6 +27,13 @@ async function fetchTables(sectionId) {
     container.textContent = "";
     container.className = "";
     container.classList.add("card");
+
+    if (row.shape == "C") {
+      container.style.borderRadius = "50%";
+      container.style.width = container.offsetHeight + "px";
+      container.style.marginLeft = "auto";
+      container.style.marginRight = "auto";
+    }
 
     container.dataset.tableId = row.id;
 
@@ -131,5 +139,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchSections();
 });
-
-module.exports = { createSections };
