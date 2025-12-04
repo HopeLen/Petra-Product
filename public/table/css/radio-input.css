@@ -1,0 +1,78 @@
+/* Radio buttons container */
+.radio-input {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 60px;
+  background-color: #444;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 3px solid #fff;
+  transition: all 0.3 ease;
+}
+
+/* Hide inputs */
+.radio-input input {
+  display: none;
+}
+
+/* Labels */
+.radio-input label {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+  color: #fff;
+}
+.menu-box {
+  margin-top: 10px;
+  height: 50%;
+  min-width: 85%;
+  min-height: 60px;
+}
+/* Sliding panel */
+.panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 3px solid black;
+  top: 30%;
+  background-color: #62af80;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s ease;
+  min-width: 10%;
+  min-height: 25%;
+  max-height: 50%;
+  z-index: -1; /* behind main-box content */
+}
+
+/* Sliding selection */
+.selection {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background-color: #222;
+  z-index: 1;
+  transition: transform 0.5s ease;
+}
+
+
+
+#value-1:checked ~ .selection {
+  transform: translateX(200%);
+}
+#value-2:checked ~ .selection {
+  transform: translateX(300%);
+}
+

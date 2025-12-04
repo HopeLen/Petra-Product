@@ -1,0 +1,38 @@
+.menu-item {
+  width: 5vw;
+  height: 7vh;
+  box-shadow: none;
+}
+.menu-container {
+  display: flex;
+  flex-wrap: wrap; /* wrap items into new rows */
+  gap: 10px;
+  overflow-y: auto;
+  padding: 5px;
+  justify-content: center;
+  align-items: center;
+  scrollbar-width: thin; /* Firefox fallback */
+  scrollbar-color: transparent transparent; /* invisible by default in Firefox */
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+.menu-container::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0); /* fully transparent initially */
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+/* Show thumb on hover */
+.menu-container:hover::-webkit-scrollbar-thumb,
+.menu-container:active::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); /* faint black */
+}

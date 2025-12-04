@@ -64,20 +64,24 @@ async function fetchTables(sectionId) {
 async function fetchSections() {
   const response = await fetch("/api/get-table-sections");
   const data = await response.json();
-  const container = document.getElementById("section-container");
-  container.innerHTML = "";
-  console.log(data);
-
   const customTextMapResponse = await fetch("/api/get-table-section-map");
   const customTextMap = await customTextMapResponse.json();
 
-  
+  createSections(
+    data,
+    customTextMap,
+    document.getElementById("section-container")
+  );
+}
+
+function createSections(data, map, container) {
+  container.innerHTML = "";
   data.sectionIds.forEach((id) => {
     const box = document.createElement("div");
     box.classList.add("card");
     box.classList.add("section-box");
 
-    box.textContent = customTextMap[id];
+    box.textContent = map[id];
 
     box.onclick = () => fetchTables(id);
 
@@ -127,3 +131,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchSections();
 });
+
+module.exports = { createSections };

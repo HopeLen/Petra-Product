@@ -16,18 +16,18 @@
   font-size: 0.5em;
 }
 
-#current-order {
+.order {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: calc(100% - 20px);
   height: 90%;
-  margin:-10px;
+  margin: -10px;
   border-radius: 10px;
   backdrop-filter: blur(1px);
 }
 
-#current-order li {
+.order li {
   display: flex;
   justify-content: space-between;
   direction: rtl;

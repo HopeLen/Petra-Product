@@ -1,5 +1,6 @@
 body {
   background-color: #a8d8ea;
+  font-family: "Arial", "Helvetica", "Noto Sans Hebrew", sans-serif;
 }
 h1 {
   font-size: 2vw;
@@ -114,7 +115,7 @@ h1 {
   align-items: center;
   justify-content: center;
   user-select: none;
-  font-weight: bolder;
+  font-weight: 600;
   color: black;
 }
 
