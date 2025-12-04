@@ -72,7 +72,7 @@ router.get("/get-menu-section/:id", async (req, res) => {
   console.log(id);
   try {
     const rows = await pool.query(
-      "SELECT name,price,extra FROM menu WHERE section_id=?",
+      "SELECT id,name,price,extra FROM menu WHERE section_id=?",
       [id]
     );
     console.log(rows);

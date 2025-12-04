@@ -1,3 +1,5 @@
+let currentOrder = [];
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -34,6 +36,43 @@ function appendToList(items, order, ul) {
   `;
     ul.append(li);
   });
+}
+
+function renderOrderList() {
+  const ul = document.getElementById("chosen-items");
+  ul.innerHTML = ""; // clear list
+
+  currentOrder.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+    <span>X${item.amount} ${item.name}</span>
+    <span>${item.price * item.amount}₪</span>
+  `;
+
+    ul.appendChild(li);
+  });
+}
+
+function buildItemLabel(item) {
+  // SIMPLE ITEM
+  if (isCommentEmpty(item.comment)) {
+    return `${item.name || item.name} - ${item.price}₪`;
+  }
+
+  // COMPLEX ITEM (with comment)
+  const c = item.comment;
+  let label = `${item.variations[c.version].name} - ${c.price}₪`;
+
+  label += ` (${item.doneness[c.doneness].name}`;
+
+  if (c.additions.length > 0) {
+    label += ", ";
+    label += c.additions.map((i) => item.additions[i].name).join(", ");
+  }
+
+  label += ")";
+
+  return label;
 }
 
 function getInfo(tableID) {
@@ -94,6 +133,104 @@ function createMenuItems(data, container, classList) {
 
     container.append(box);
   });
+}
+
+function requiresPopup(item) {
+  return item.extra != null;
+}
+
+function isCommentEmpty(comment) {
+  return (
+    comment == null ||
+    (typeof comment === "string" && comment.trim() === "") ||
+    (typeof comment === "object" && Object.keys(comment).length === 0)
+  );
+}
+
+function addItemToOrder(item) {
+  console.log("Adding item:", item);
+
+  if (requiresPopup(item)) {
+    // This is a complex item → needs customization popup
+    createPopupFromItem(item);
+  } else {
+    // Simple item → add directly with no comment
+    addSimpleItem(item);
+  }
+  renderOrderList();
+}
+
+function addSimpleItem(item) {
+  const orderEntry = {
+    id: item.id,
+    name: item.name,
+    amount: 1,
+    price: item.price,
+    comment: "",
+  };
+
+  const existing = findExistingOrderItem(orderEntry);
+
+  if (existing) {
+    existing.amount += 1;
+  } else {
+    currentOrder.push(orderEntry);
+  }
+
+  console.log("ORDER LIST:", currentOrder);
+}
+
+function findExistingOrderItem(newItem) {
+  return currentOrder.find((existing) => {
+    // Different IDs → not the same
+    if (existing.id !== newItem.id) return false;
+
+    // No comment → simple item
+    if (isCommentEmpty(existing.comment) && isCommentEmpty(newItem.comment)) {
+      return true;
+    }
+
+    // Both have comments → compare JSON
+    if (!isCommentEmpty(existing.comment) && !isCommentEmpty(newItem.comment)) {
+      return (
+        JSON.stringify(existing.comment) === JSON.stringify(newItem.comment)
+      );
+    }
+
+    return false;
+  });
+}
+
+function addComplexItem(item, selected) {
+  /*
+    selected = {
+      variationIndex: 2,
+      donenessIndex: 1,
+      additions: [0, 3],
+      extraIndex: 1
+    }
+  */
+
+  let price =
+    item.variations[selected.variationIndex].price +
+    selected.additions.reduce((sum, i) => sum + item.additions[i].price, 0);
+
+  const finalItem = {
+    id: item.id,
+    amount: 1,
+    price: price,
+    comment: {
+      version: selected.variationIndex,
+      doneness: selected.donenessIndex,
+      additions: selected.additions,
+      extra: selected.extraIndex,
+      price: price,
+    },
+  };
+
+  currentOrder.push(finalItem);
+
+  console.log("ORDER LIST:", currentOrder);
 }
 
 async function changeMenuSection(request) {

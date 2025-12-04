@@ -1,0 +1,20 @@
+{
+  "variations": [
+    { "name": "המבורגר", "price": 78 },
+    { "name": "המבורגר צ'יז", "price": 86 },
+    { "name": "המבורגר כבד אווז", "price": 132 },
+    { "name": "המבורגר אסאדו", "price": 106 },
+    { "name": "המבורגר פטרה", "price": 112 }
+  ],
+  "doneness": [{ "name": "M" }, { "name": "MW" }, { "name": "WD" }],
+  "additions": [
+    { "name": "קציצה", "price": 38 },
+    { "name": "בצל מטוגן", "price": 6 },
+    { "name": "ביצת עין", "price": 10 },
+    { "name": "פטריות", "price": 8 },
+    { "name": "גבינת צ'דר", "price": 10 },
+    { "name": "3 טבעות בצל", "price": 12 },
+    { "name": "ריבת בצל", "price": 6 }
+  ],
+  "extra": [{ "name": "צ'יפס" }, { "name": "פירה" }, { "name": "אורז" }]
+}

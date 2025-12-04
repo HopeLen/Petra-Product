@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/table.css" />
     <link rel="stylesheet" href="css/radio-input.css" />
     <link rel="stylesheet" href="css/menu.css" />
-
   </head>
   <body>
     <div class="parent">
@@ -19,28 +18,27 @@
       <div class="main-box">
         <h1 class="title">:הזמנה</h1>
         <div id="information"></div>
-        <div id="chosen-items"></div>
+        <ul class="order" id="chosen-items"></ul>
       </div>
-<div class="main-box">
-  <h1 class="title">:תפריט</h1>
+      <div class="main-box">
+        <h1 class="title">:תפריט</h1>
 
-  <!-- Radio Bar/Kitchen start -->
-  <div class="radio-input">
-    <input value="value-1" name="value-radio" id="value-1" type="radio" />
-    <input value="value-2" name="value-radio" id="value-2" type="radio" />
+        <!-- Radio Bar/Kitchen start -->
+        <div class="radio-input">
+          <input value="value-1" name="value-radio" id="value-1" type="radio" />
+          <input value="value-2" name="value-radio" id="value-2" type="radio" />
 
-    <label for="value-1"><span>בר</span></label>
-    <label for="value-2"><span>מטבח</span></label>
+          <label for="value-1"><span>בר</span></label>
+          <label for="value-2"><span>מטבח</span></label>
 
-    <span class="selection"></span>
-  </div>
-  <!-- Radio Bar/Kitchen end -->
+          <span class="selection"></span>
+        </div>
+        <!-- Radio Bar/Kitchen end -->
 
-  <div class="panel" id="menu-sections"></div>
-  <div class="menu-container" id="main-menu"></ul>
-</div>
-
-
+        <div class="panel" id="menu-sections"></div>
+        <div class="menu-container" id="main-menu"></div>
+      </div>
+    </div>
 
     <script src="table.js"></script>
   </body>
