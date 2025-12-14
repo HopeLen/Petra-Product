@@ -21,7 +21,7 @@ async function getOrder(tableID) {
 
   console.log(items);
 
-  appendToList(items, order, ul);
+  renderOrderList(document.getElementById("current-order"), order.order);
 }
 
 function appendToList(items, order, ul) {
@@ -38,17 +38,24 @@ function appendToList(items, order, ul) {
   });
 }
 
-function renderOrderList() {
-  const ul = document.getElementById("chosen-items");
+function renderOrderList(ul, list) {
   ul.innerHTML = ""; // clear list
 
-  currentOrder.forEach((item, index) => {
+  list.forEach((item, index) => {
     const li = document.createElement("li");
     li.innerHTML = `
     <span>X${item.amount} ${item.name}</span>
     <span>${item.price * item.amount}₪</span>
   `;
-
+    li.onclick = async () => {
+      const infoItem = await fetch(`/api/get-menu-item/${item.id}`).then(
+        (response) => response.json()
+      );
+      await createPopupFromItem(infoItem[0]);
+      await delay(100);
+      fixPopupFromItem(item, index, infoItem[0]);
+      console.log("DONE");
+    };
     ul.appendChild(li);
   });
 }
@@ -123,15 +130,17 @@ function createSections(data, map, container, classList) {
 function createMenuItems(data, container, classList) {
   container.innerHTML = "";
   data.forEach((item) => {
-    const box = document.createElement("div");
-    console.log(item);
-    classList.forEach((styleClass) => {
-      box.classList.add(styleClass);
-    });
-    box.innerHTML = item.name;
-    box.onclick = () => addItemToOrder(item);
+    if (item.visibility != 0) {
+      const box = document.createElement("div");
+      console.log(item);
+      classList.forEach((styleClass) => {
+        box.classList.add(styleClass);
+      });
+      box.innerHTML = item.name;
+      box.onclick = () => addItemToOrder(item);
 
-    container.append(box);
+      container.append(box);
+    }
   });
 }
 
@@ -157,7 +166,51 @@ function addItemToOrder(item) {
     // Simple item → add directly with no comment
     addSimpleItem(item);
   }
-  renderOrderList();
+  console.log(currentOrder);
+  renderOrderList(document.getElementById("chosen-items"), currentOrder);
+}
+
+async function createPopupFromItem(item) {
+  activatePopup(item);
+
+  const tranlationResponse = await fetch("/api/get-translation-map");
+  const tranlation = await tranlationResponse.json();
+  console.log(tranlation);
+
+  const title = document.getElementById("item-title");
+  const options = document.getElementById("options");
+
+  title.innerHTML = "";
+  options.innerHTML = "";
+
+  //console.log("Item Variations:", item.extra.variations);
+  //console.log("Item Doneness:", item.extra.doneness);
+  //console.log("Item Additions:", item.extra.additions);
+  //console.log("Item Extras:", item.extra.extra);
+
+  //naming the popup
+  title.textContent = item.name;
+
+  //creating option elements
+  if (requiresPopup(item)) {
+    Object.keys(item.extra).forEach((key) => {
+      const div = document.createElement("div");
+      div.id = key;
+      div.classList.add("option-box");
+      options.appendChild(div);
+      //console.log(div);
+      //console.log(item.extra[key].items);
+
+      createList(
+        key,
+        tranlation[key],
+        item.extra[key].items,
+        item.extra[key].type
+      );
+    });
+  }
+
+  document.getElementById("send").textContent = "שמור שינויים";
 }
 
 function addSimpleItem(item) {
@@ -166,71 +219,39 @@ function addSimpleItem(item) {
     name: item.name,
     amount: 1,
     price: item.price,
-    comment: "",
+    extra: item.extra,
   };
-
-  const existing = findExistingOrderItem(orderEntry);
-
-  if (existing) {
-    existing.amount += 1;
-  } else {
-    currentOrder.push(orderEntry);
+  if (document.getElementById("comment").value) {
+    orderEntry.extra = {};
+    orderEntry.extra.comment = document.getElementById("comment").value;
   }
 
-  console.log("ORDER LIST:", currentOrder);
+  currentOrder = addOrIncrease(currentOrder, orderEntry);
+  console.log("Current order is:");
+  console.log(currentOrder);
 }
 
-function findExistingOrderItem(newItem) {
-  return currentOrder.find((existing) => {
-    // Different IDs → not the same
-    if (existing.id !== newItem.id) return false;
+function addComplexItem(item) {
+  let finalItem = {};
+  const amount = Number(document.getElementById("amount").value);
+  const extra = getAllInputs();
+  extra.comment = document.getElementById("comment").value;
 
-    // No comment → simple item
-    if (isCommentEmpty(existing.comment) && isCommentEmpty(newItem.comment)) {
-      return true;
-    }
+  finalItem.price = calculateTotal(item.extra, extra);
+  finalItem.id = item.id;
+  console.log("NAME: " + item.extra.variations.items[extra.variations].name);
+  console.log(extra.variations);
+  finalItem.name = item.extra.variations.items[extra.variations].name;
+  finalItem.extra = extra;
+  //SUBJECT TO CHANGE!!!!!!
+  finalItem.amount = amount;
+  //!!!!!
+  console.log(finalItem);
 
-    // Both have comments → compare JSON
-    if (!isCommentEmpty(existing.comment) && !isCommentEmpty(newItem.comment)) {
-      return (
-        JSON.stringify(existing.comment) === JSON.stringify(newItem.comment)
-      );
-    }
-
-    return false;
-  });
-}
-
-function addComplexItem(item, selected) {
-  /*
-    selected = {
-      variationIndex: 2,
-      donenessIndex: 1,
-      additions: [0, 3],
-      extraIndex: 1
-    }
-  */
-
-  let price =
-    item.variations[selected.variationIndex].price +
-    selected.additions.reduce((sum, i) => sum + item.additions[i].price, 0);
-
-  const finalItem = {
-    id: item.id,
-    amount: 1,
-    price: price,
-    comment: {
-      version: selected.variationIndex,
-      doneness: selected.donenessIndex,
-      additions: selected.additions,
-      extra: selected.extraIndex,
-      price: price,
-    },
-  };
-
-  currentOrder.push(finalItem);
-
-  console.log("ORDER LIST:", currentOrder);
+  currentOrder = addOrIncrease(currentOrder, finalItem);
+  console.log("Current order is:");
+  console.log(currentOrder);
+  renderOrderList(document.getElementById("chosen-items"), currentOrder);
 }
 
 async function changeMenuSection(request) {
@@ -256,6 +277,49 @@ async function fetchMenu(id) {
   createMenuItems(data, container, classList);
 }
 
+async function sendOrder(tableID) {
+  console.log("Sending order to table: ", tableID);
+  const existingOrder = await fetch(`/api/get-table-order/${tableID}`).then(
+    (response) => response.json()
+  );
+  let newOrder;
+  console.log(existingOrder);
+  if (existingOrder.order) {
+    newOrder = existingOrder.order;
+    currentOrder.forEach((item) => {
+      addOrIncrease(newOrder, item);
+    });
+  } else {
+    newOrder = currentOrder;
+  }
+  console.log(newOrder);
+
+  await sendingTheOrder(tableID, newOrder);
+
+  currentOrder = [];
+  console.log("current order:");
+  console.log(currentOrder);
+  renderOrderList(document.getElementById("chosen-items"), currentOrder);
+  renderOrderList(document.getElementById("current-order"), newOrder);
+}
+
+async function sendingTheOrder(tableID, newOrder) {
+  const sending = await fetch(`/api/post-order/${tableID}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newOrder),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Server response:", data);
+    })
+    .catch((err) => {
+      console.error("Error:", err);
+    });
+}
+
 //event listeners:
 document.getElementById("value-1").addEventListener("change", async () => {
   await changeMenuSection("BAR");
@@ -271,6 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("SUCCSESS");
   console.log(tableID);
 
+  document.getElementById("order-send").onclick = () => sendOrder(tableID);
   getOrder(tableID);
   getInfo(tableID);
 });

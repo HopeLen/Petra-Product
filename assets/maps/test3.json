@@ -1,0 +1,9 @@
+{
+  "variations": {
+    "type": "radio",
+    "items": [
+      { "name": "ווינשטפן 0.3", "price": 34 },
+      { "name": "ווינשטפן 0.5", "price": 40 }
+    ]
+  }
+}

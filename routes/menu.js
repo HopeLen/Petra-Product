@@ -33,6 +33,10 @@ router.get("/get-BAR-menu-map", (req, res) => {
   res.json(require("../assets/maps/bar-menu-section-map.json"));
 });
 
+router.get("/get-translation-map", async (req, res) => {
+  res.json(require("../assets/maps/translation-map.json"));
+});
+
 router.get("/get-menu-sections-KITCHEN", async (req, res) => {
   try {
     const rows = await pool.query(
@@ -71,10 +75,22 @@ router.get("/get-menu-section/:id", async (req, res) => {
   const id = req.params.id;
   console.log(id);
   try {
-    const rows = await pool.query(
-      "SELECT id,name,price,extra FROM menu WHERE section_id=?",
-      [id]
-    );
+    const rows = await pool.query("SELECT * FROM menu WHERE section_id = ?", [
+      id,
+    ]);
+    console.log(rows);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/get-menu-item/:id", async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const rows = await pool.query("SELECT * from menu WHERE id = ?", id);
     console.log(rows);
     res.json(rows);
   } catch (err) {

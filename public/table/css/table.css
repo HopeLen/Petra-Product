@@ -39,3 +39,16 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 2px solid black;
 }
+
+.main-box .order-send {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  outline: none;
+  font-size: 30px;
+  border-radius: 30px;
+  cursor: pointer;
+  background: #3284ed;
+  color: #fff;
+  display: flex;
+}

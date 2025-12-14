@@ -1,0 +1,9 @@
+{
+  "variations": {
+    "type": "radio",
+    "items": [
+      { "name": "חומוס", "price": 36 },
+      { "name": "חומוס פטריות", "price": 44 }
+    ]
+  }
+}

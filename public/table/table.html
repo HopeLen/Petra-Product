@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/table.css" />
     <link rel="stylesheet" href="css/radio-input.css" />
     <link rel="stylesheet" href="css/menu.css" />
+    <link rel="stylesheet" href="css/popup.css" />
   </head>
   <body>
     <div class="parent">
@@ -19,6 +20,7 @@
         <h1 class="title">:הזמנה</h1>
         <div id="information"></div>
         <ul class="order" id="chosen-items"></ul>
+        <button class="order-send" id="order-send">שליחת הזמנה</button>
       </div>
       <div class="main-box">
         <h1 class="title">:תפריט</h1>
@@ -39,7 +41,22 @@
         <div class="menu-container" id="main-menu"></div>
       </div>
     </div>
-
-    <script src="table.js"></script>
+    <div class="popup" id="popup">
+      <div id="overlay" class="overlay"></div>
+      <div class="popup-content" id="popup-content">
+        <h2 id="item-title"></h2>
+        <div class="options" id="options"></div>
+        <div class="inputs" id="inputs">
+          <input type="number" id="amount" class="amount" min="1" value="1" />
+          <input type="text" id="comment" class="comment" />
+        </div>
+        <div class="controls" id="controls">
+          <button id="send" class="button" onclick="addComplexItem()"></button>
+        </div>
+      </div>
+    </div>
+    <script src="js/complexItemHelpers.js"></script>
+    <script src="js/popup.js"></script>
+    <script src="js/table.js"></script>
   </body>
 </html>
