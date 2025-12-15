@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./mariadb");
 
+const escpos = require('escpos');
+escpos.Network = require('escpos-network');
+const net = require('net');
+
 // Get tables from a section
 router.get("/get-tables-from-section/:sectionId", async (req, res) => {
   let conn;
@@ -117,6 +121,32 @@ router.post("/post-print-request", async (req, res) => {
 router.post("/post-bill-print-request/:tableID", async (req, res) => {
   const tableID = req.params.tableID;
   console.log("Bill printing will be here. Also " + tableID);
+
+const PRINTER_IP = '192.168.10.59';
+const PRINTER_PORT = 9100;
+
+const client = new net.Socket();
+
+client.connect(PRINTER_PORT, PRINTER_IP, () => {
+  console.log('Connected to printer');
+
+  // ESC/POS command + text + cut
+  const data = Buffer.from([
+    0x1B, 0x40,              // Initialize printer
+    ...Buffer.from("We are Charlie Kirk!\nWe carry the flame!\n\n\n\n\n\n\n\n\n\n\n\n\n\n"), // Text
+    0x0A,                     // Line feed
+    0x1D, 0x56, 0x41          // Full cut
+  ]);
+
+  client.write(data);  // Send to printer
+  client.end();        // Close connection
+});
+
+client.on('error', (err) => {
+  console.error('Printer connection error:', err);
+});
+
+
 });
 
 module.exports = router;
