@@ -14,6 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", tablesRoutes);
 app.use("/api", menuRoutes);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server listening on port ${PORT}`);
 });

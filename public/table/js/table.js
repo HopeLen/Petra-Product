@@ -309,9 +309,6 @@ async function sendOrder(tableID) {
   }
   console.log(newOrder);
 
-  await sendingTheOrder(tableID, newOrder);
-  await sendPrintRequest(newOrder);
-
   currentOrder = [];
   console.log("current order:");
   console.log(currentOrder);
@@ -328,6 +325,9 @@ async function sendOrder(tableID) {
     mutability
   );
   getPrice(tableID);
+
+  await sendingTheOrder(tableID, newOrder);
+  await sendPrintRequest(newOrder);
 }
 
 async function sendPrintRequest(order) {
