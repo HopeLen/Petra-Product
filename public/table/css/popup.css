@@ -28,6 +28,9 @@
   border-radius: 20px;
   box-shadow: 0px 2px 2px 5px rgba(0, 0, 0, 0.05);
   transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  overflow: auto;
+  max-height: 85%;
+  max-width: 85%;
 }
 
 .popup .popup-content h2 {
@@ -57,16 +60,22 @@
   display: flex;
   flex-direction: row;
   justify-content: center; /* FIX */
+  max-height: 20%;
+  overflow-y: auto;
 }
 
 .options .option-box {
   margin: 10px;
   padding: 10px;
-  font-size: larger;
+  font-size: large;
   background-color: aliceblue;
   border: 2px solid black;
   border-radius: 20px;
   direction: rtl;
+  max-height: 20%;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .options .option-box h3 {

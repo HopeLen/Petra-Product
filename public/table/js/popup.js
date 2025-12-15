@@ -17,7 +17,7 @@ function closePopup() {
   document.getElementById("popup").classList.remove("active");
   document.getElementById("comment").value = "";
   document.getElementById("amount").value = 1;
-
+  document.getElementById("options").innerHTML="";
   if (document.getElementById("button-rmv")) {
     document.getElementById("button-rmv").remove();
   }
