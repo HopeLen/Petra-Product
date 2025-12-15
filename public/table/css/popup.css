@@ -5,6 +5,7 @@
   width: 100%;
   height: 100%;
 }
+
 .popup .overlay {
   position: absolute;
   top: 0px;
@@ -15,19 +16,20 @@
   opacity: 0;
   transition: opacity 100ms ease-in-out 200ms;
 }
+
 .popup .popup-content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1.15);
   opacity: 0;
-
   background: #fff;
   padding: 25px;
   border-radius: 20px;
   box-shadow: 0px 2px 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 300ms ease-in-out;
+  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
 }
+
 .popup .popup-content h2 {
   margin: 10px 0px;
   font-size: 3em;
@@ -43,7 +45,7 @@
 
 .popup.active .overlay {
   opacity: 1;
-  transition: all 300ms ease-in-out;
+  transition: opacity 300ms ease-in-out;
 }
 
 .popup.active .popup-content {
@@ -54,7 +56,7 @@
 .options {
   display: flex;
   flex-direction: row;
-  justify-self: center;
+  justify-content: center; /* FIX */
 }
 
 .options .option-box {
@@ -90,7 +92,6 @@
   width: 7%;
   height: 2em;
   direction: rtl;
-
   font-size: 1.2em;
   border: 1px solid black;
   border-radius: 10px;
