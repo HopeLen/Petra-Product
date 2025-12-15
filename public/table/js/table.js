@@ -20,8 +20,12 @@ async function getOrder(tableID) {
   const items = await response2.json();
 
   console.log(items);
-
-  renderOrderList(document.getElementById("current-order"), order.order);
+  let mutability = false;
+  renderOrderList(
+    document.getElementById("current-order"),
+    order.order,
+    mutability
+  );
 }
 
 function appendToList(items, order, ul) {
@@ -38,7 +42,7 @@ function appendToList(items, order, ul) {
   });
 }
 
-function renderOrderList(ul, list) {
+function renderOrderList(ul, list, mutability = true) {
   ul.innerHTML = ""; // clear list
 
   list.forEach((item, index) => {
@@ -53,7 +57,8 @@ function renderOrderList(ul, list) {
       );
       await createPopupFromItem(infoItem[0]);
       await delay(100);
-      fixPopupFromItem(item, index, infoItem[0]);
+      console.log("This is renderOrderList's mutability: " + mutability);
+      fixPopupFromItem(item, index, infoItem[0], mutability);
       console.log("DONE");
     };
     ul.appendChild(li);
@@ -167,7 +172,12 @@ function addItemToOrder(item) {
     addSimpleItem(item);
   }
   console.log(currentOrder);
-  renderOrderList(document.getElementById("chosen-items"), currentOrder);
+  let mutability = true;
+  renderOrderList(
+    document.getElementById("chosen-items"),
+    currentOrder,
+    mutability
+  );
 }
 
 async function createPopupFromItem(item) {
@@ -251,7 +261,12 @@ function addComplexItem(item) {
   currentOrder = addOrIncrease(currentOrder, finalItem);
   console.log("Current order is:");
   console.log(currentOrder);
-  renderOrderList(document.getElementById("chosen-items"), currentOrder);
+  let mutability = true;
+  renderOrderList(
+    document.getElementById("chosen-items"),
+    currentOrder,
+    mutability
+  );
 }
 
 async function changeMenuSection(request) {
@@ -295,12 +310,39 @@ async function sendOrder(tableID) {
   console.log(newOrder);
 
   await sendingTheOrder(tableID, newOrder);
+  await sendPrintRequest(newOrder);
 
   currentOrder = [];
   console.log("current order:");
   console.log(currentOrder);
-  renderOrderList(document.getElementById("chosen-items"), currentOrder);
-  renderOrderList(document.getElementById("current-order"), newOrder);
+  let mutability = true;
+  renderOrderList(
+    document.getElementById("chosen-items"),
+    currentOrder,
+    mutability
+  );
+  mutability = false;
+  renderOrderList(
+    document.getElementById("current-order"),
+    newOrder,
+    mutability
+  );
+  getPrice(tableID);
+}
+
+async function sendPrintRequest(order) {
+  const sending = await fetch(`/api/post-print-request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(order),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Server Response: ", data);
+    })
+    .catch((err) => {
+      console.error("Error: ", err);
+    });
 }
 
 async function sendingTheOrder(tableID, newOrder) {
@@ -320,6 +362,20 @@ async function sendingTheOrder(tableID, newOrder) {
     });
 }
 
+async function getPrice(tableID) {
+  const order = await fetch(`/api/get-table-order/${tableID}`).then(
+    (response) => response.json()
+  );
+  let total = 0;
+
+  order.order.forEach((item) => {
+    total += item.price;
+  });
+  console.log("Total Price: " + total);
+
+  return total;
+}
+
 //event listeners:
 document.getElementById("value-1").addEventListener("change", async () => {
   await changeMenuSection("BAR");
@@ -329,7 +385,8 @@ document.getElementById("value-2").addEventListener("change", async () => {
   await changeMenuSection("KITCHEN");
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+//On-load events
+document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const tableID = params.get("id");
   console.log("SUCCSESS");
@@ -338,4 +395,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("order-send").onclick = () => sendOrder(tableID);
   getOrder(tableID);
   getInfo(tableID);
+
+  const price = await getPrice(tableID);
+  const rouncedPrice = (price * 1.1).toFixed(2);
+
+  document.getElementById("total-price").textContent =
+    "סכום החשבון: " + rouncedPrice + "₪";
+  document.getElementById("tip-value").textContent =
+    "טיפ: " + (rouncedPrice * 1.1 - rouncedPrice).toFixed(2) + "₪";
+
+  document.getElementById("print-bill").onclick = async () => {
+    await renderBillPopup(tableID);
+  };
 });

@@ -49,7 +49,7 @@ function createList(containerId, name, items, type) {
   });
 }
 
-function fixPopupFromItem(item, index, infoItem) {
+function fixPopupFromItem(item, index, infoItem, mutability) {
   console.log("FIXING NOW");
   // Loop over each category in the item's extra
   if (requiresPopup(infoItem)) {
@@ -88,21 +88,40 @@ function fixPopupFromItem(item, index, infoItem) {
   console.log("Index: " + index);
   console.log("Item: ");
   console.log(item);
+  console.log("Mutability is: " + mutability);
+  if (mutability) {
+    document.getElementById("send").onclick = () => {
+      removeItem(index);
 
-  document.getElementById("send").onclick = () => {
-    removeItem(index);
+      if (requiresPopup(infoItem)) {
+        console.log("Remaking a complex item");
+        addComplexItem(infoItem);
+      } else {
+        addSimpleItem();
+      }
 
-    if (requiresPopup(infoItem)) {
-      console.log("Remaking a complex item");
-      addComplexItem(infoItem);
-    } else {
-      addSimpleItem();
-    }
+      closePopup();
+    };
+  } else {
+    disableOrEnableInputs(!mutability);
+    document.getElementById("send").onclick = () => {
+      disableOrEnableInputs(mutability);
+      closePopup();
+    };
+    document
+      .getElementById("overlay")
+      .addEventListener("click", () => disableOrEnableInputs(mutability));
+  }
 
-    closePopup();
-  };
+  createRmvButton(index, mutability);
+}
 
-  createRmvButton(index);
+function disableOrEnableInputs(mutability) {
+  document
+    .querySelectorAll(
+      'input[type="radio"], input[type="checkbox"], input[type="text"], input[type="number"'
+    )
+    .forEach((i) => (i.disabled = mutability));
 }
 
 function removeItem(index) {
@@ -111,7 +130,7 @@ function removeItem(index) {
   currentOrder.splice(index, 1);
 }
 
-function createRmvButton(index) {
+function createRmvButton(index, mutability) {
   const controls = document.getElementById("controls");
   const button = document.createElement("button");
 

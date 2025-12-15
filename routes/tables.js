@@ -106,4 +106,17 @@ router.get("/get-table-section-map", async (req, res) => {
   res.json(require("../assets/maps/table-section-map.json"));
 });
 
+router.get("/get-bill-options", async (req, res) => {
+  res.json(require("../assets/maps/bill-popup.json"));
+});
+
+router.post("/post-print-request", async (req, res) => {
+  console.log("The printing will be here");
+});
+
+router.post("/post-bill-print-request/:tableID", async (req, res) => {
+  const tableID = req.params.tableID;
+  console.log("Bill printing will be here. Also " + tableID);
+});
+
 module.exports = router;

@@ -25,6 +25,9 @@
   margin: 10px;
   border-radius: 10px;
   backdrop-filter: blur(1px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 .order li {

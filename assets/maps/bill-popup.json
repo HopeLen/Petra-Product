@@ -1,0 +1,12 @@
+{
+  "bill_options": {
+    "type": "radio",
+    "items": [
+      { "name": "0%" },
+      { "name": "5%" },
+      { "name": "10%" },
+      { "name": "15%" },
+      { "name": "20%" }
+    ]
+  }
+}

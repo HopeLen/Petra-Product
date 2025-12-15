@@ -15,6 +15,9 @@
       <div class="main-box">
         <h1 class="title">:הזמנה קיימת</h1>
         <ul class="order" id="current-order"></ul>
+        <h3 id="total-price"></h3>
+        <h4 id="tip-value"></h4>
+        <button class="order-send" id="print-bill">הדפס חשבון</button>
       </div>
       <div class="main-box">
         <h1 class="title">:הזמנה</h1>
@@ -41,6 +44,7 @@
         <div class="menu-container" id="main-menu"></div>
       </div>
     </div>
+
     <div class="popup" id="popup">
       <div id="overlay" class="overlay"></div>
       <div class="popup-content" id="popup-content">
@@ -55,6 +59,7 @@
         </div>
       </div>
     </div>
+    <script src="js/bill.js"></script>
     <script src="js/complexItemHelpers.js"></script>
     <script src="js/popup.js"></script>
     <script src="js/table.js"></script>
