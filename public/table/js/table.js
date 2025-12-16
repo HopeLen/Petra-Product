@@ -348,7 +348,21 @@ async function sendOrder(tableID) {
 
   await sendingTheOrder(tableID, newOrder);
   await sendPrintRequest(newOrder);
-  getPrice(tableID);
+  console.log("Writing the price")
+  await writePrice(tableID);
+
+}
+
+async function writePrice(tableID) {
+  const price = await getPrice(tableID);
+  const rouncedPrice = (price * 1.1).toFixed(2);
+
+  console.log(price,rouncedPrice);
+
+  document.getElementById("total-price").textContent =
+    "סכום החשבון: " + rouncedPrice + "₪";
+  document.getElementById("tip-value").textContent =
+    "טיפ: " + (rouncedPrice * 1.1 - rouncedPrice).toFixed(2) + "₪";
 }
 
 async function sendPrintRequest(order) {
@@ -423,13 +437,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   getOrder(tableID);
   getInfo(tableID, waiterId);
 
-  const price = await getPrice(tableID);
-  const rouncedPrice = (price * 1.1).toFixed(2);
-
-  document.getElementById("total-price").textContent =
-    "סכום החשבון: " + rouncedPrice + "₪";
-  document.getElementById("tip-value").textContent =
-    "טיפ: " + (rouncedPrice * 1.1 - rouncedPrice).toFixed(2) + "₪";
+  writePrice(tableID);
 
   document.getElementById("print-bill").onclick = async () => {
     await renderBillPopup(tableID);
