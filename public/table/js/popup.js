@@ -140,11 +140,48 @@ function createRmvButton(index, mutability) {
 
   controls.appendChild(button);
 
-  button.onclick = () => {
-    removeItem(index);
-    closePopup();
-    renderOrderList(document.getElementById("chosen-items"), currentOrder);
-  };
+  if (mutability) {
+    button.onclick = () => {
+      removeItem(index);
+      closePopup();
+      renderOrderList(document.getElementById("chosen-items"), currentOrder);
+      disableOrEnableInputs(mutability);
+    };
+  } else {
+    button.onclick = async () => {
+      const waiterID = prompt("הכנס קוד:");
+      const adminResponse = await fetch(
+        `/api/get-admin-privileges/${waiterID}`
+      ).then((res) => res.json());
+      const admin = adminResponse[0].admin;
+
+      console.log(admin);
+
+      if (!admin) {
+        alert("אין לך זכויות!");
+        closePopup();
+        return;
+      }
+
+      console.log("We have continued!");
+
+      const order = await getOrder(tableID);
+      console.log(order);
+      console.log("The one above is the one I want");
+
+      order.order.splice(index, 1);
+      console.log(order);
+
+      sendingTheOrder(tableID, order.order);
+      renderOrderList(
+        document.getElementById("current-order"),
+        order.order,
+        mutability
+      );
+      disableOrEnableInputs(mutability);
+      closePopup();
+    };
+  }
 }
 
 function createBoxTitle(name) {

@@ -12,4 +12,14 @@ router.get("/get-waiter-name/:waiterID", async (req, res) => {
   res.json(name);
 });
 
+router.get("/get-admin-privileges/:waiterID", async (req, res) => {
+  const waiterID = req.params.waiterID;
+  const admin = await pool.query(
+    "SELECT admin FROM users WHERE id = ?",
+    waiterID
+  );
+  console.log(admin);
+  res.json(admin);
+});
+
 module.exports = router;

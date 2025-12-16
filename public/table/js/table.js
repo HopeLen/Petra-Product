@@ -1,4 +1,5 @@
 let currentOrder = [];
+let tableID;
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,6 +27,7 @@ async function getOrder(tableID) {
     order.order,
     mutability
   );
+  return order;
 }
 
 function appendToList(items, order, ul) {
@@ -252,7 +254,7 @@ function addSimpleItem(item) {
   console.log(currentOrder);
 
   let mutability = true;
-  
+
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
@@ -343,10 +345,11 @@ async function sendOrder(tableID) {
     newOrder,
     mutability
   );
-  getPrice(tableID);
+  
 
   await sendingTheOrder(tableID, newOrder);
   await sendPrintRequest(newOrder);
+  getPrice(tableID);
 }
 
 async function sendPrintRequest(order) {
@@ -407,7 +410,7 @@ document.getElementById("value-2").addEventListener("change", async () => {
 //On-load events
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
-  const tableID = params.get("tableId");
+  tableID = params.get("tableId");
   const waiterId = params.get("waiterId");
   console.log("SUCCSESS");
   console.log(tableID);
