@@ -1,4 +1,4 @@
-body{
+body {
   height: 97vh;
   width: 97vw;
 }
@@ -6,7 +6,7 @@ body{
 .parent {
   display: flex;
   flex-direction: row;
-  width: 50vw;
+  width: 80vw;
   margin-left: auto;
   margin-right: auto;
 }
@@ -60,3 +60,11 @@ body{
   color: #fff;
   display: flex;
 }
+
+.information {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%;
+}
+

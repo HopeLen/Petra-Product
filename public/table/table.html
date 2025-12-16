@@ -15,13 +15,16 @@
       <div class="main-box">
         <h1 class="title">:הזמנה קיימת</h1>
         <ul class="order" id="current-order"></ul>
-        <h3 id="total-price"></h3>
+        <h3 id="total-price" style="text-decoration: underline"></h3>
         <h4 id="tip-value"></h4>
         <button class="order-send" id="print-bill">הדפס חשבון</button>
       </div>
       <div class="main-box">
         <h1 class="title">:הזמנה</h1>
-        <div id="information"></div>
+        <div id="information" class="information">
+          <h5 id="tableID"></h5>
+          <h5 id="waiterID"></h5>
+        </div>
         <ul class="order" id="chosen-items"></ul>
         <button class="order-send" id="order-send">שליחת הזמנה</button>
       </div>
@@ -51,7 +54,14 @@
         <h2 id="item-title"></h2>
         <div class="options" id="options"></div>
         <div class="inputs" id="inputs">
-          <input type="number" id="amount" class="amount" min="1" value="1" />
+          <input
+            inputmode="numeric"
+            type="number"
+            id="amount"
+            class="amount"
+            min="1"
+            value="1"
+          />
           <input type="text" id="comment" class="comment" />
         </div>
         <div class="controls" id="controls">

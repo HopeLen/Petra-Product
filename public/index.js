@@ -40,7 +40,15 @@ async function fetchTables(sectionId) {
     container.onclick = function () {
       //if (row.status !== "LOCKED") {
       console.log("Opening the table: " + row.id);
-      window.location.href = `/table/table.html?id=${row.id}`;
+
+      const waiterId = prompt("הכנס קוד:");
+
+      if (waiterId === null || waiterId.trim() === "") {
+        // User cancelled or entered nothing
+        return;
+      }
+
+      window.location.href = `/table/table.html?tableId=${row.id}&waiterId=${waiterId}`;
       //} else {
       //alert("מישהו כבר נמצא בשולחן... נסו שנית אחר כך");
       //}

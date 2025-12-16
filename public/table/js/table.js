@@ -57,7 +57,8 @@ function renderOrderList(ul, list, mutability = true) {
       );
       await createPopupFromItem(infoItem[0]);
       await delay(100);
-      console.log("This is renderOrderList's mutability: " + mutability);
+      console.log("This is the item: ");
+      console.log(item);
       fixPopupFromItem(item, index, infoItem[0], mutability);
       console.log("DONE");
     };
@@ -87,9 +88,19 @@ function buildItemLabel(item) {
   return label;
 }
 
-function getInfo(tableID) {
-  const info = document.getElementById("information");
-  info.textContent = "מספר שולחן: " + tableID;
+async function getInfo(tableID, waiterID) {
+  const table = document.getElementById("tableID");
+  const waiter = document.getElementById("waiterID");
+
+  const waiterName = await fetch(`/api/get-waiter-name/${waiterID}`).then(
+    (res) => res.json()
+  );
+
+  console.log("This is the waiter's name: ");
+  console.log(waiterName);
+
+  waiter.textContent = "מלצר מטפל: " + waiterName[0].name;
+  table.textContent = "מספר שולחן: " + tableID;
 }
 
 async function getMenuSections(checked) {
@@ -239,6 +250,14 @@ function addSimpleItem(item) {
   currentOrder = addOrIncrease(currentOrder, orderEntry);
   console.log("Current order is:");
   console.log(currentOrder);
+
+  let mutability = true;
+  
+  renderOrderList(
+    document.getElementById("chosen-items"),
+    currentOrder,
+    mutability
+  );
 }
 
 function addComplexItem(item) {
@@ -369,7 +388,7 @@ async function getPrice(tableID) {
   let total = 0;
 
   order.order.forEach((item) => {
-    total += item.price;
+    total += item.price * item.amount;
   });
   console.log("Total Price: " + total);
 
@@ -388,13 +407,15 @@ document.getElementById("value-2").addEventListener("change", async () => {
 //On-load events
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
-  const tableID = params.get("id");
+  const tableID = params.get("tableId");
+  const waiterId = params.get("waiterId");
   console.log("SUCCSESS");
   console.log(tableID);
+  console.log(waiterId);
 
   document.getElementById("order-send").onclick = () => sendOrder(tableID);
   getOrder(tableID);
-  getInfo(tableID);
+  getInfo(tableID, waiterId);
 
   const price = await getPrice(tableID);
   const rouncedPrice = (price * 1.1).toFixed(2);

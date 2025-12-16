@@ -17,7 +17,7 @@ function closePopup() {
   document.getElementById("popup").classList.remove("active");
   document.getElementById("comment").value = "";
   document.getElementById("amount").value = 1;
-  document.getElementById("options").innerHTML="";
+  document.getElementById("options").innerHTML = "";
   if (document.getElementById("button-rmv")) {
     document.getElementById("button-rmv").remove();
   }
@@ -80,9 +80,8 @@ function fixPopupFromItem(item, index, infoItem, mutability) {
   document.getElementById("amount").value = item.amount;
 
   try {
-    if (item.extra.comment) {
-      document.getElementById("comment").value = item.extra.comment;
-    }
+    console.log(item.extra.comment);
+    document.getElementById("comment").value = item.extra.comment;
   } catch (err) {}
 
   console.log("Index: " + index);
@@ -97,7 +96,7 @@ function fixPopupFromItem(item, index, infoItem, mutability) {
         console.log("Remaking a complex item");
         addComplexItem(infoItem);
       } else {
-        addSimpleItem();
+        addSimpleItem(infoItem);
       }
 
       closePopup();
