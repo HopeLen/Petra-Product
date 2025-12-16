@@ -119,4 +119,10 @@ router.post("/post-bill-print-request/:tableID", async (req, res) => {
   console.log("Bill printing will be here. Also " + tableID);
 });
 
+router.get("/nullify-order/:tableID", async (req, res) => {
+  const tableID = req.params.tableID;
+
+  pool.query("UPDATE tables SET `order` = NULL WHERE id = ?", tableID);
+});
+
 module.exports = router;

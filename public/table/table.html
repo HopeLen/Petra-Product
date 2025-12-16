@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Table</title>
     <link rel="stylesheet" href="../index.css" />
-    <link rel="stylesheet" href="css/table.css" />
     <link rel="stylesheet" href="css/radio-input.css" />
     <link rel="stylesheet" href="css/menu.css" />
     <link rel="stylesheet" href="css/popup.css" />
+    <link rel="stylesheet" href="css/table.css" />
   </head>
   <body>
     <div class="parent">
@@ -17,7 +17,16 @@
         <ul class="order" id="current-order"></ul>
         <h3 id="total-price" style="text-decoration: underline"></h3>
         <h4 id="tip-value"></h4>
-        <button class="order-send" id="print-bill">הדפס חשבון</button>
+        <div class="settings">
+          <button
+            class="order-send table-move"
+            id="table-move"
+            onclick="tableMove()"
+          >
+            הקפצת שולחן
+          </button>
+          <button class="order-send" id="print-bill">הדפס חשבון</button>
+        </div>
       </div>
       <div class="main-box">
         <h1 class="title">:הזמנה</h1>
@@ -69,6 +78,7 @@
         </div>
       </div>
     </div>
+    <script src="js/table-moving.js"></script>
     <script src="js/bill.js"></script>
     <script src="js/complexItemHelpers.js"></script>
     <script src="js/popup.js"></script>

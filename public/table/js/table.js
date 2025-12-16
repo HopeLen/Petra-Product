@@ -345,7 +345,6 @@ async function sendOrder(tableID) {
     newOrder,
     mutability
   );
-  
 
   await sendingTheOrder(tableID, newOrder);
   await sendPrintRequest(newOrder);
@@ -396,6 +395,10 @@ async function getPrice(tableID) {
   console.log("Total Price: " + total);
 
   return total;
+}
+
+async function nullifyOrder(tableID) {
+  fetch(`/api/nullify-order/${tableID}`);
 }
 
 //event listeners:

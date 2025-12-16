@@ -68,3 +68,11 @@ body {
   width: 70%;
 }
 
+.settings {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings .table-move {
+  background-color: #5fa6a6;
+}
