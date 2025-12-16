@@ -2,9 +2,14 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./mariadb");
 
-const escpos = require('escpos');
-escpos.Network = require('escpos-network');
-const net = require('net');
+const escpos = require("escpos");
+escpos.Network = require("escpos-network");
+const net = require("net");
+const {
+  buildReceipt,
+  emptyLine,
+} = require("../assets/printers/receiptFormater");
+const { print } = require("./print");
 
 // Get tables from a section
 router.get("/get-tables-from-section/:sectionId", async (req, res) => {
@@ -15,7 +20,7 @@ router.get("/get-tables-from-section/:sectionId", async (req, res) => {
 
     const rows = await conn.query(
       "SELECT id, location, status, shape FROM `tables` WHERE section_id = ?",
-      [sectionId]
+      [sectionId],
     );
 
     res.json(rows);
@@ -38,7 +43,7 @@ router.post("/set-table-status", async (req, res) => {
     conn = await pool.getConnection();
     const result = await conn.query(
       "UPDATE tables SET status = ? WHERE id = ?",
-      [targetStatus, tableID]
+      [targetStatus, tableID],
     );
 
     res.json({ success: true, changedRows: result.affectedRows });
@@ -54,7 +59,7 @@ router.post("/set-table-status", async (req, res) => {
 router.get("/get-table-sections", async (req, res) => {
   try {
     const rows = await pool.query(
-      "SELECT DISTINCT section_id FROM tables ORDER BY section_id ASC"
+      "SELECT DISTINCT section_id FROM tables ORDER BY section_id ASC",
     );
 
     const sectionIds = rows.map((r) => Number(r.section_id));
@@ -74,7 +79,7 @@ router.get("/get-table-order/:tableID", async (req, res) => {
   try {
     const [order] = await pool.query(
       "SELECT `order` FROM tables WHERE id = ?",
-      [tableID]
+      [tableID],
     );
     res.json(order);
   } catch (err) {
@@ -121,32 +126,21 @@ router.post("/post-print-request", async (req, res) => {
 router.post("/post-bill-print-request/:tableID", async (req, res) => {
   const tableID = req.params.tableID;
   console.log("Bill printing will be here. Also " + tableID);
+  const receipt = buildReceipt({
+    shopName: "PETRA",
+    phone: "",
+    items: [
+      { name: "Burger", price: 25 },
+      { name: "Fries", price: 10 },
+      { name: "Cola", price: 8 },
+    ],
+    total: 43,
+  });
 
-const PRINTER_IP = '192.168.10.59';
-const PRINTER_PORT = 9100;
+  print(receipt);
+  print(emptyLine());
 
-const client = new net.Socket();
-
-client.connect(PRINTER_PORT, PRINTER_IP, () => {
-  console.log('Connected to printer');
-
-  // ESC/POS command + text + cut
-  const data = Buffer.from([
-    0x1B, 0x40,              // Initialize printer
-    ...Buffer.from("We are Charlie Kirk!\nWe carry the flame!\n\n\n\n\n\n\n\n\n\n\n\n\n\n"), // Text
-    0x0A,                     // Line feed
-    0x1D, 0x56, 0x41          // Full cut
-  ]);
-
-  client.write(data);  // Send to printer
-  client.end();        // Close connection
-});
-
-client.on('error', (err) => {
-  console.error('Printer connection error:', err);
-});
-
-
+  res.send("Printed");
 });
 
 module.exports = router;

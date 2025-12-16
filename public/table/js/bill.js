@@ -5,7 +5,7 @@ function createBillPopup() {
   popUp.classList.add("active");
 
   document.getElementById("send").onclick = () => {
-    sendBill();
+    sendBillPrintRequest();
     closeBillPopup();
   };
 
