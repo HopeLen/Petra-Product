@@ -10,6 +10,7 @@ const {
   emptyLine,
 } = require("../assets/printers/receiptFormater");
 const { print } = require("./print");
+const { table } = require("console");
 
 // Get tables from a section
 router.get("/get-tables-from-section/:sectionId", async (req, res) => {
@@ -126,15 +127,19 @@ router.post("/post-print-request", async (req, res) => {
 router.post("/post-bill-print-request/:tableID", async (req, res) => {
   const tableID = req.params.tableID;
   console.log("Bill printing will be here. Also " + tableID);
+
+  const [order] = await pool.query("SELECT `order` FROM tables WHERE id = ?", tableID);
+  console.log(order.order);
+  let total;
+  order.order.forEach((item) => {
+    total += item.price * item.amount;
+  });
+
   const receipt = buildReceipt({
-    shopName: "PETRA",
+    shopName: "פטרה",
     phone: "",
-    items: [
-      { name: "Burger", price: 25 },
-      { name: "Fries", price: 10 },
-      { name: "Cola", price: 8 },
-    ],
-    total: 43,
+    items: order.order,
+    total: total,
   });
 
   print(receipt);
