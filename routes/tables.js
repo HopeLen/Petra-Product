@@ -82,24 +82,30 @@ router.get("/get-table-order/:tableID", async (req, res) => {
 router.post("/post-order/:tableID", express.json(), async (req, res) => {
   const tableID = req.params.tableID;
   const orderArray = req.body;
-  const sql = `
-  UPDATE tables
-  SET \`order\` = ?
-  WHERE id = ?
-`;
 
-  console.log("This is the order:");
-  console.log(orderArray);
-  console.log(tableID);
+  const sql = `
+    UPDATE tables
+    SET \`order\` = ?
+    WHERE id = ?
+  `;
+
   try {
-    await pool.query(sql, [JSON.stringify(orderArray), tableID]);
-    console.log("success");
+    const result = await pool.query(sql, [JSON.stringify(orderArray), tableID]);
+    console.log(result);
+    // 🚨 Table does not exist
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: "Table not found",
+      });
+    }
+
+    // ✅ Success
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
-
-  res.send({ ok: true });
 });
 
 router.get("/get-table-section-map", async (req, res) => {

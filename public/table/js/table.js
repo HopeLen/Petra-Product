@@ -348,16 +348,15 @@ async function sendOrder(tableID) {
 
   await sendingTheOrder(tableID, newOrder);
   await sendPrintRequest(newOrder);
-  console.log("Writing the price")
+  console.log("Writing the price");
   await writePrice(tableID);
-
 }
 
 async function writePrice(tableID) {
   const price = await getPrice(tableID);
   const rouncedPrice = (price * 1.1).toFixed(2);
 
-  console.log(price,rouncedPrice);
+  console.log(price, rouncedPrice);
 
   document.getElementById("total-price").textContent =
     "סכום החשבון: " + rouncedPrice + "₪";
@@ -391,10 +390,20 @@ async function sendingTheOrder(tableID, newOrder) {
     .then((res) => res.json())
     .then((data) => {
       console.log("Server response:", data);
+      console.log("Ok:", data.ok);
+      if (data.ok) {
+        console.log("Returning true");
+        return true;
+      } else {
+        console.log("Returning false");
+        return false;
+      }
     })
     .catch((err) => {
       console.error("Error:", err);
     });
+  console.log("Sending: ", sending);
+  return sending;
 }
 
 async function getPrice(tableID) {
