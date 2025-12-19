@@ -92,7 +92,7 @@ function rtlRow(left, right) {
 // ─────────────────────────────────────────────
 // Receipt builder
 // ─────────────────────────────────────────────
-function buildReceipt({ shopName, phone, items, total }) {
+function buildReceipt({ shopName, phone, items, total, percent }) {
   const buffers = [];
 
   buffers.push(Buffer.from(INIT));
@@ -125,11 +125,11 @@ function buildReceipt({ shopName, phone, items, total }) {
   buffers.push(encodeHebrew(rtlLineChar()));
 
   // Total
-  buffers.push(Buffer.from(BOLD_ON));
-  buffers.push(encodeHebrew(rtlRow(":סהכ", total.toFixed(2))));
-  buffers.push(Buffer.from(BOLD_OFF));
+  buffers.push(Buffer.from(encodeHebrew(rtlRow("שירות:", percent))));
 
-  buffers.push(encodeHebrew(rtlLine("\nכולל מעמ\n")));
+  buffers.push(Buffer.from(BOLD_ON));
+  buffers.push(encodeHebrew(rtlRow("סך הכל:", total.toFixed(2))));
+  buffers.push(Buffer.from(BOLD_OFF));
 
   buffers.push(FLUSH);
   buffers.push(Buffer.from(CUT));

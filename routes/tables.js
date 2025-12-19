@@ -124,22 +124,27 @@ router.post("/post-print-request", async (req, res) => {
   console.log("The printing will be here");
 });
 
-router.post("/post-bill-print-request/:tableID", async (req, res) => {
-  const tableID = req.params.tableID;
-  console.log("Bill printing will be here. Also " + tableID);
+router.post("/post-bill-print-request/:tableID/:percent", async (req, res) => {
+  const { tableID, percent } = req.params.tableID;
+  console.log(
+    "Bill printing will be here. Also " + tableID + " and " + percent,
+  );
 
-  const [order] = await pool.query("SELECT `order` FROM tables WHERE id = ?", tableID);
+  const [order] = await pool.query(
+    "SELECT `order` FROM tables WHERE id = ?",
+    tableID,
+  );
   console.log(order.order);
-  let total;
+  let total = 0;
   order.order.forEach((item) => {
     total += item.price * item.amount;
   });
-
   const receipt = buildReceipt({
     shopName: "פטרה",
     phone: "",
     items: order.order,
     total: total,
+    percent: percent,
   });
 
   print(receipt);
