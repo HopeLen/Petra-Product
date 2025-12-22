@@ -89,7 +89,7 @@ function alignLeftRightCenter(
   left = " ",
   right = " ",
   center = " ",
-  lineWidth = 42
+  lineWidth = 42,
 ) {
   const leftLen = [...left].length;
   const centerLen = [...center].length;
@@ -132,8 +132,8 @@ function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew("מחיר"),
         reverseHebrew("כמות"),
-        reverseHebrew("פריט")
-      )
+        reverseHebrew("פריט"),
+      ),
     );
   let total = 0;
 
@@ -142,8 +142,8 @@ function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
         String(item.amount),
-        reverseHebrew(item.name)
-      )
+        reverseHebrew(item.name),
+      ),
     );
 
     if (item.extra) {
@@ -151,24 +151,30 @@ function styleRequestBill(order) {
       console.log(infoItem);
       buffer = buffer.align("right");
       Object.keys(item.extra).forEach((key) => {
+        console.log(key);
         if (
-          (key != "variations" && infoItem.extra[key].type == "radio") ||
-          (key != "comment" && infoItem.extra[key].type == "radio")
+          key != "variations" &&
+          key != "comment" &&
+          infoItem.extra[key].type == "radio"
         ) {
           buffer = buffer.line(
             reverseHebrew(
               " " +
                 translation[key] +
                 ": " +
-                infoItem.extra[key].items[item.extra[key]]
-            )
+                infoItem.extra[key].items[item.extra[key]],
+            ),
           );
         }
-        if (infoItem.extra[key].type == "checkbox") {
+        if (
+          key != "variations" &&
+          key != "comment" &&
+          infoItem.extra[key].type == "checkbox"
+        ) {
           buffer = buffer.line(reverseHebrew(translation[key] + ": "));
           item.extra[key].forEach((num) => {
             buffer = buffer.line(
-              reverseHebrew("  " + infoItem.extra[key][num])
+              reverseHebrew("  " + infoItem.extra[key][num]),
             );
           });
         }
@@ -184,29 +190,31 @@ function styleRequestBill(order) {
     .align("right")
     .line(
       reverseHebrew(' ש"ח') +
-        String(total * 1.1 - total) +
-        reverseHebrew("שירות:")
+        String(Math.ceil(total * order.percent - total)) +
+        reverseHebrew("שירות: "),
     )
     .bold(true)
     .line(
-      reverseHebrew(' ש"ח') + String(total * 1.1) + reverseHebrew("סך הכל: ")
+      reverseHebrew(' ש"ח') +
+        String(Math.ceil(total * order.percent)) +
+        reverseHebrew("סך הכל: "),
     )
     .bold(false)
     .newline()
     .newline()
     .align("center")
-    .line(reverseHebrew("הנא דרגו את המדסעדה שלנו"))
+    .line(reverseHebrew("הנא דרגו את המסעדה שלנו"))
     .align("center")
-    .qrcode(qrCode, 2, 4, "h")
-    .encode();
+    .qrcode(qrCode, 2, 4, "h");
 
-  return buffer;
+  return buffer.encode();
 }
 
-function processRequest(order) {
-  let buffer;
+async function processRequest(order) {
   if (order.type == "bill") {
-    buffer = styleRequestBill(order);
+    let buffer = styleRequestBill(order);
+    console.log(buffer);
+    return buffer;
   } else {
     buffer = styleRequestBon(order);
   }
@@ -214,9 +222,13 @@ function processRequest(order) {
 }
 
 async function print(order, autoClose = true) {
-  let buffer = processRequest(order);
+  let buffer = await processRequest(order);
 
+  PRINTER_IP = "192.168.10.59";
+
+  const conn = await connectPrinter();
   conn.write(buffer);
+
   let outerEncoder = encoder.initialize();
 
   for (i = 0; i < 7 * 1; i++) {
