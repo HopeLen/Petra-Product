@@ -26,16 +26,12 @@ function selectTenPercent() {
   document.getElementById("bill_options-2").checked = true;
 }
 
-async function sendBillPrintRequest(options, tableID) {
-  console.log(options);
-  const sedning = await fetch(
-    `/api/post-bill-print-request/${tableID}/${10}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(options),
-    },
-  )
+async function sendPrintRequest(options) {
+  const sedning = await fetch(`/api/pos-print-request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  })
     .then((res) => res.json())
     .then((data) => {
       console.log("Server Response: ", data);
@@ -45,16 +41,26 @@ async function sendBillPrintRequest(options, tableID) {
     });
 }
 
+function convertToNum(chosen, options) {
+  return (
+    1 +
+    Number(
+      options.bill_options.items[chosen.bill_options].name.replace("%", "")
+    ) /
+      100
+  );
+}
+
 async function renderBillPopup(tableID) {
   createBillPopup();
   const tranlationResponse = await fetch("/api/get-translation-map");
   const tranlation = await tranlationResponse.json();
 
   const bill_options = await fetch(`/api/get-bill-options`).then((response) =>
-    response.json(),
+    response.json()
   );
   console.log(tranlation);
-  console.log("bill options: " + bill_options);
+  console.log("bill options: ", bill_options);
   const title = document.getElementById("item-title");
   const options = document.getElementById("options");
 
@@ -73,7 +79,7 @@ async function renderBillPopup(tableID) {
       key,
       tranlation[key],
       bill_options[key].items,
-      bill_options[key].type,
+      bill_options[key].type
     );
   });
 
@@ -82,7 +88,34 @@ async function renderBillPopup(tableID) {
 
   document.getElementById("send").textContent = "הדפס חשבון";
   document.getElementById("send").onclick = async () => {
-    sendBillPrintRequest(getAllInputs(), tableID);
+    const type = "bill";
+    const percent = convertToNum(getAllInputs(), bill_options);
+
+    const waiterID = 1; //TO CHANGE
+    const time = new Date().toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const date = new Date().toLocaleString("en-GB", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const items = await getOrder(tableID);
+
+    const options = {
+      type: type,
+      percent: percent,
+      waiterID: waiterID,
+      time: time,
+      date: date,
+      items: items,
+    };
+
+    console.log(options);
+
+    sendPrintRequest(options);
     closeBillPopup();
   };
 }

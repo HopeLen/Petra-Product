@@ -18,7 +18,7 @@ const qrCode =
 
 async function getItem(id) {
   try {
-    const rows = await pool.query("SELECT * from menu WHERE id = ?", id);
+    const rows = await pool.query("SELECT * FROM menu WHERE id = ?", id);
     console.log(rows);
     return rows;
   } catch (err) {
@@ -26,6 +26,18 @@ async function getItem(id) {
     return err;
   }
 }
+
+async function getWaiter(id) {
+  try {
+    const rows = await pool.query("SELECT name FROM users WHERE id = ?", id);
+    console.log(rows);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+}
+
 function connectPrinter() {
   if (printer) return printer;
 
@@ -97,6 +109,8 @@ function alignLeftRightCenter(
 }
 
 function styleRequestBill(order) {
+  console.log(order);
+
   let buffer = encoder
     //codepage:
     .codepage("windows1255")
@@ -123,7 +137,7 @@ function styleRequestBill(order) {
     );
   let total = 0;
 
-  order.forEach(async (item) => {
+  order.items.order.forEach(async (item) => {
     buffer = buffer.line(
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
@@ -189,18 +203,18 @@ function styleRequestBill(order) {
   return buffer;
 }
 
-async function print(order, printer, type, autoClose = true) {
-  PRINTER_IP = printer.address;
-
-  const conn = await connectPrinter();
-
+function processRequest(order) {
   let buffer;
-
-  if (type == "bill") {
+  if (order.type == "bill") {
     buffer = styleRequestBill(order);
   } else {
     buffer = styleRequestBon(order);
   }
+  return buffer;
+}
+
+async function print(order, autoClose = true) {
+  let buffer = processRequest(order);
 
   conn.write(buffer);
   let outerEncoder = encoder.initialize();
