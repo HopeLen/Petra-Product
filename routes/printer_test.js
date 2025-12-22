@@ -75,8 +75,10 @@ router.post("/post-print-request-test", async (req, res) => {
     },
   ];
 
+  const type = "bill";
+
   console.log("Printing the buffer:");
-  await print(order, printer);
+  await print(order, printer, type);
 });
 
 module.exports = router;
