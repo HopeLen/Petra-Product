@@ -5,7 +5,7 @@ function createBillPopup() {
   popUp.classList.add("active");
 
   document.getElementById("send").onclick = () => {
-    sendBill();
+    sendBillPrintRequest();
     closeBillPopup();
   };
 
@@ -27,11 +27,15 @@ function selectTenPercent() {
 }
 
 async function sendBillPrintRequest(options, tableID) {
-  const sedning = await fetch(`/api/post-bill-print-request/${tableID}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(options),
-  })
+  console.log(options);
+  const sedning = await fetch(
+    `/api/post-bill-print-request/${tableID}/${10}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(options),
+    },
+  )
     .then((res) => res.json())
     .then((data) => {
       console.log("Server Response: ", data);
@@ -47,7 +51,7 @@ async function renderBillPopup(tableID) {
   const tranlation = await tranlationResponse.json();
 
   const bill_options = await fetch(`/api/get-bill-options`).then((response) =>
-    response.json()
+    response.json(),
   );
   console.log(tranlation);
   console.log("bill options: " + bill_options);
@@ -69,7 +73,7 @@ async function renderBillPopup(tableID) {
       key,
       tranlation[key],
       bill_options[key].items,
-      bill_options[key].type
+      bill_options[key].type,
     );
   });
 
