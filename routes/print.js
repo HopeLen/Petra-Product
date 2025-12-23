@@ -10,6 +10,8 @@ const PRINTER_PORT = 9100;
 
 const SEPERATOR = "------------------------------------------";
 
+const centerRightGap = 4; // 👈 how close center is to right
+
 const encoder = new EscPosEncoder({});
 let printer = null;
 
@@ -19,7 +21,6 @@ const qrCode =
 async function getItem(id) {
   try {
     const rows = await pool.query("SELECT * FROM menu WHERE id = ?", id);
-    console.log(rows);
     return rows;
   } catch (err) {
     console.error(err);
@@ -31,7 +32,7 @@ async function getWaiter(id) {
   try {
     const rows = await pool.query("SELECT name FROM users WHERE id = ?", id);
     console.log(rows);
-    return rows;
+    return rows[0].name;
   } catch (err) {
     console.error(err);
     return err;
@@ -95,22 +96,22 @@ function alignLeftRightCenter(
   const centerLen = [...center].length;
   const rightLen = [...right].length;
 
-  const remaining = lineWidth - leftLen - centerLen - rightLen;
+  const remaining = lineWidth - leftLen - centerLen - rightLen - centerRightGap;
 
-  if (remaining < 2) {
-    // Fallback if text is too long
-    return left + center + right;
+  if (remaining < 1) {
+    return left + center + " ".repeat(centerRightGap) + right;
   }
 
-  const spaceLeft = Math.floor(remaining / 2);
-  const spaceRight = remaining - spaceLeft;
-
-  return left + " ".repeat(spaceLeft) + center + " ".repeat(spaceRight) + right;
+  return (
+    left + " ".repeat(remaining) + center + " ".repeat(centerRightGap) + right
+  );
 }
 
-function styleRequestBill(order) {
+async function styleRequestBill(order) {
   console.log(order);
-
+  const waiter = await getWaiter(order.waiterID);
+  console.log(waiter);
+  console.log(order.tableID);
   let buffer = encoder
     //codepage:
     .codepage("windows1255")
@@ -125,6 +126,15 @@ function styleRequestBill(order) {
     .width(1)
     //PETRA name end
 
+    //Header start:
+    .align("right")
+    .line(reverseHebrew("מספר שולחן: " + order.tableID))
+    .line(reverseHebrew("מלצר מטפל: " + waiter))
+    //.line FOR ORDER NUMBER TO DO
+    .align("left")
+
+    //Header end
+
     //Content start:
     .align("left")
     .line(SEPERATOR)
@@ -137,7 +147,7 @@ function styleRequestBill(order) {
     );
   let total = 0;
 
-  order.items.order.forEach(async (item) => {
+  for (const item of order.items.order) {
     buffer = buffer.line(
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
@@ -147,42 +157,57 @@ function styleRequestBill(order) {
     );
 
     if (item.extra) {
-      const infoItem = await getItem(item.id);
-      console.log(infoItem);
+      const infoItem = (await getItem(item.id))[0];
       buffer = buffer.align("right");
-      Object.keys(item.extra).forEach((key) => {
-        console.log(key);
+      for (const key of Object.keys(infoItem.extra)) {
         if (
-          key != "variations" &&
-          key != "comment" &&
-          infoItem.extra[key].type == "radio"
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "radio"
         ) {
           buffer = buffer.line(
             reverseHebrew(
-              " " +
-                translation[key] +
-                ": " +
-                infoItem.extra[key].items[item.extra[key]],
+              " ".repeat(centerRightGap + 2) +
+                `${translation[key]}: ${
+                  infoItem.extra[key].items[item.extra[key]]?.name ?? ""
+                }`,
             ),
           );
         }
-        if (
-          key != "variations" &&
-          key != "comment" &&
-          infoItem.extra[key].type == "checkbox"
-        ) {
-          buffer = buffer.line(reverseHebrew(translation[key] + ": "));
-          item.extra[key].forEach((num) => {
-            buffer = buffer.line(
-              reverseHebrew("  " + infoItem.extra[key][num]),
-            );
-          });
-        }
-      });
-    }
 
+        if (
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "checkbox"
+        ) {
+          console.log(infoItem);
+          buffer = buffer.line(
+            reverseHebrew(
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
+            ),
+          );
+
+          for (const num of item.extra[key]) {
+            buffer = buffer.line(
+              reverseHebrew(
+                " ".repeat(centerRightGap + 3) +
+                  infoItem.extra[key].items[num]?.name +
+                  " ".repeat(
+                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length,
+                  ) +
+                  infoItem.extra[key].items[num]?.price +
+                  " " +
+                  'ש"ח',
+              ),
+            );
+          }
+        }
+      }
+    }
+    buffer = buffer.align("left");
     total += item.price * item.amount;
-  });
+  }
+
   //Content end
 
   buffer = buffer
@@ -206,17 +231,17 @@ function styleRequestBill(order) {
     .line(reverseHebrew("הנא דרגו את המסעדה שלנו"))
     .align("center")
     .qrcode(qrCode, 2, 4, "h");
-
+  console.log(buffer);
   return buffer.encode();
 }
 
+function styleRequestBon() {}
 async function processRequest(order) {
   if (order.type == "bill") {
-    let buffer = styleRequestBill(order);
+    let buffer = await styleRequestBill(order);
     console.log(buffer);
     return buffer;
   } else {
-    buffer = styleRequestBon(order);
   }
   return buffer;
 }
