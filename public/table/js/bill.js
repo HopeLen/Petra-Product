@@ -28,7 +28,7 @@ function selectTenPercent() {
 
 async function sendPrintRequest(options) {
   console.log(options);
-  const sedning = await fetch(`/api/pos-print-request`, {
+  const sedning = await fetch(`/api/post-print-request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options),
@@ -46,19 +46,22 @@ function convertToNum(chosen, options) {
   return (
     1 +
     Number(
-      options.bill_options.items[chosen.bill_options].name.replace("%", ""),
+      options.bill_options.items[chosen.bill_options].name.replace("%", "")
     ) /
       100
   );
 }
 
-async function renderBillPopup(tableID) {
+async function renderBillPopup(
+  tableID,
+  printer = { id: 1, name: "OUT", address: "192.168.10.59" }
+) {
   createBillPopup();
   const tranlationResponse = await fetch("/api/get-translation-map");
   const tranlation = await tranlationResponse.json();
 
   const bill_options = await fetch(`/api/get-bill-options`).then((response) =>
-    response.json(),
+    response.json()
   );
   console.log(tranlation);
   console.log("bill options: ", bill_options);
@@ -80,7 +83,7 @@ async function renderBillPopup(tableID) {
       key,
       tranlation[key],
       bill_options[key].items,
-      bill_options[key].type,
+      bill_options[key].type
     );
   });
 
@@ -106,6 +109,7 @@ async function renderBillPopup(tableID) {
     const items = await getOrder(tableID);
 
     const options = {
+      printers: printer,
       type: type,
       percent: percent,
       waiterID: waiterID,

@@ -5,11 +5,6 @@ const pool = require("./mariadb");
 const escpos = require("escpos");
 escpos.Network = require("escpos-network");
 const net = require("net");
-const {
-  buildReceipt,
-  emptyLine,
-} = require("../assets/printers/receiptFormater");
-const { print } = require("./print");
 const { table } = require("console");
 
 // Get tables from a section

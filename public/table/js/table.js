@@ -330,15 +330,10 @@ async function sendOrder(tableID) {
   }
   console.log(newOrder);
 
-  currentOrder = [];
   console.log("current order:");
   console.log(currentOrder);
   let mutability = true;
-  renderOrderList(
-    document.getElementById("chosen-items"),
-    currentOrder,
-    mutability
-  );
+
   mutability = false;
   renderOrderList(
     document.getElementById("current-order"),
@@ -347,9 +342,93 @@ async function sendOrder(tableID) {
   );
 
   await sendingTheOrder(tableID, newOrder);
-  await sendPrintRequest(newOrder);
+  await seperatePrintRequest(currentOrder);
+  currentOrder = [];
+  renderOrderList(
+    document.getElementById("chosen-items"),
+    currentOrder,
+    mutability
+  );
   console.log("Writing the price");
   await writePrice(tableID);
+}
+
+async function getAllPrinters() {
+  const printers = await fetch(`/api/get-all-printers`).then((res) =>
+    res.json()
+  );
+  return printers;
+}
+
+async function getItemPrinters(id) {
+  const itemPrinters = await fetch(`/api/get-items-printers/${id}`).then(
+    (res) => res.json()
+  );
+  return itemPrinters;
+}
+
+function assignItemToPrinters(item, printerQueues, itemPrinters) {
+  const flags = itemPrinters.split("-").map(Number);
+
+  flags.forEach((flag, index) => {
+    if (flag === 1 && printerQueues[index]) {
+      printerQueues[index].push(item);
+    }
+  });
+}
+
+async function seperatePrintRequest(order) {
+  const printers = await getAllPrinters();
+  console.log(order);
+
+  const printerQueues = printers.map(() => []);
+
+  order.forEach(async (item) => {
+    const itemPrinters = await getItemPrinters(item.id);
+    console.log("Item printers: ", itemPrinters);
+    assignItemToPrinters(item, printerQueues, itemPrinters.printers);
+  });
+  console.log(printerQueues);
+
+  await delay(100);
+
+  printerQueues.forEach((array, index) => {
+    console.log(array.length);
+    if (array.length) {
+      console.log("The array's length is NOT 0");
+      const type = "bon";
+      const percent = null;
+
+      const waiterID = 1; //TO CHANGE
+      const time = new Date().toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const date = new Date().toLocaleString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const items = array;
+
+      const options = {
+        printers: printers[index],
+        type: type,
+        percent: percent,
+        waiterID: waiterID,
+        tableID: tableID,
+        time: time,
+        date: date,
+        items: items,
+      };
+
+      console.log("Options: ", options);
+
+      sendPrintRequest(options);
+    }
+    console.log(array);
+  });
 }
 
 async function writePrice(tableID) {
@@ -362,21 +441,6 @@ async function writePrice(tableID) {
     "סכום החשבון: " + rouncedPrice + "₪";
   document.getElementById("tip-value").textContent =
     "טיפ: " + (rouncedPrice * 1.1 - rouncedPrice).toFixed(2) + "₪";
-}
-
-async function sendPrintRequest(order) {
-  const sending = await fetch(`/api/post-print-request`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(order),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("Server Response: ", data);
-    })
-    .catch((err) => {
-      console.error("Error: ", err);
-    });
 }
 
 async function sendingTheOrder(tableID, newOrder) {

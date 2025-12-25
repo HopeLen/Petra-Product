@@ -1,7 +1,7 @@
 const net = require("net");
 const EscPosEncoder = require("esc-pos-encoder");
 
-const pool = require("./mariadb");
+const pool = require("../routes/mariadb");
 const translation = require("../assets/maps/translation-map.json");
 const { info } = require("console");
 
@@ -90,7 +90,7 @@ function alignLeftRightCenter(
   left = " ",
   right = " ",
   center = " ",
-  lineWidth = 42,
+  lineWidth = 42
 ) {
   const leftLen = [...left].length;
   const centerLen = [...center].length;
@@ -137,13 +137,15 @@ async function styleRequestBill(order) {
 
     //Content start:
     .align("left")
+    .bold(true)
     .line(SEPERATOR)
+    .bold(false)
     .line(
       alignLeftRightCenter(
         reverseHebrew("מחיר"),
         reverseHebrew("כמות"),
-        reverseHebrew("פריט"),
-      ),
+        reverseHebrew("פריט")
+      )
     );
   let total = 0;
 
@@ -152,8 +154,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
         String(item.amount),
-        reverseHebrew(item.name),
-      ),
+        reverseHebrew(item.name)
+      )
     );
 
     if (item.extra) {
@@ -170,8 +172,8 @@ async function styleRequestBill(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`,
-            ),
+                }`
+            )
           );
         }
 
@@ -183,8 +185,8 @@ async function styleRequestBill(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
-            ),
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
+            )
           );
 
           for (const num of item.extra[key]) {
@@ -193,12 +195,12 @@ async function styleRequestBill(order) {
                 " ".repeat(centerRightGap + 3) +
                   infoItem.extra[key].items[num]?.name +
                   " ".repeat(
-                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length,
+                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length
                   ) +
                   infoItem.extra[key].items[num]?.price +
                   " " +
-                  'ש"ח',
-              ),
+                  'ש"ח'
+              )
             );
           }
         }
@@ -211,18 +213,23 @@ async function styleRequestBill(order) {
   //Content end
 
   buffer = buffer
+    .bold(true)
     .line(SEPERATOR)
+    .bold(false)
+    .align("center")
+    .line(order.time)
+    .line(order.date)
     .align("right")
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent - total)) +
-        reverseHebrew("שירות: "),
+        reverseHebrew("שירות " + ") רשות (: ")
     )
     .bold(true)
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent)) +
-        reverseHebrew("סך הכל: "),
+        reverseHebrew("סך הכל: " + ")כולל " + (order.percent - 1) * 100 + "%)")
     )
     .bold(false)
     .newline()
@@ -235,21 +242,40 @@ async function styleRequestBill(order) {
   return buffer.encode();
 }
 
-function styleRequestBon() {}
+async function styleRequestBon(order) {
+  console.log(order);
+  const waiter = await getWaiter(order.waiterID);
+
+  let buffer = encoder
+    .codepage("windows1252")
+    //Header start
+    .align("right")
+    .line(reverseHebrew("מספר שולחן: " + order.tableID))
+    .line(reverseHebrew("מלצר מטפל: " + waiter))
+    //.line FOR ORDER NUMBER TO DO
+    .align("left");
+  //Header end
+
+  buffer = buffer.bold(true).line(SEPERATOR).bold(false);
+}
+
 async function processRequest(order) {
+  console.log(order);
   if (order.type == "bill") {
     let buffer = await styleRequestBill(order);
     console.log(buffer);
     return buffer;
   } else {
+    let buffer = await styleRequestBon(order);
+    console.log(buffer);
+    return buffer;
   }
-  return buffer;
 }
 
 async function print(order, autoClose = true) {
   let buffer = await processRequest(order);
 
-  PRINTER_IP = "192.168.10.59";
+  PRINTER_IP = order.printer.address;
 
   const conn = await connectPrinter();
   conn.write(buffer);

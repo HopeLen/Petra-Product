@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 const menuRoutes = require("./routes/menu");
 const tablesRoutes = require("./routes/tables");
-const printer_test = require("./routes/printer_test");
+const printer_test = require("./routes/printer");
 
 const escpos = require("escpos");
 escpos.Network = require("escpos-network");
