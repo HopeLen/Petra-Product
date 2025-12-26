@@ -28,7 +28,6 @@ router.get("/get-items-printers/:id", async (req, res) => {
 
 router.post("/post-print-request", async (req, res) => {
   const request = req.body;
-  console.log(request);
   await print(request);
   res.json({ ok: true });
 });
