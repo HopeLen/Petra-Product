@@ -20,7 +20,7 @@ router.get("/get-items-printers/:id", async (req, res) => {
 
   const [printers] = await pool.query(
     "SELECT printers FROM menu WHERE id=?",
-    id
+    id,
   );
   console.log(printers);
   res.json(printers);
@@ -29,7 +29,8 @@ router.get("/get-items-printers/:id", async (req, res) => {
 router.post("/post-print-request", async (req, res) => {
   const request = req.body;
   console.log(request);
-  print(request);
+  await print(request);
+  res.json({ ok: true });
 });
 
 module.exports = router;

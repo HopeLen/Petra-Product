@@ -109,7 +109,7 @@ async function renderBillPopup(
     const items = await getOrder(tableID);
 
     const options = {
-      printers: printer,
+      printer: printer,
       type: type,
       percent: percent,
       waiterID: waiterID,

@@ -5,7 +5,6 @@ const pool = require("../routes/mariadb");
 const translation = require("../assets/maps/translation-map.json");
 const { info } = require("console");
 
-let PRINTER_IP = "";
 const PRINTER_PORT = 9100;
 
 const SEPERATOR = "------------------------------------------";
@@ -28,6 +27,10 @@ async function getItem(id) {
   }
 }
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function getWaiter(id) {
   try {
     const rows = await pool.query("SELECT name FROM users WHERE id = ?", id);
@@ -39,26 +42,34 @@ async function getWaiter(id) {
   }
 }
 
-function connectPrinter() {
-  if (printer) return printer;
+// Store connections per IP
+const printers = new Map();
 
-  printer = net.createConnection(PRINTER_PORT, PRINTER_IP);
+async function connectPrinter(ip) {
+  // Return existing connection if still alive
+  if (printers.has(ip)) {
+    const conn = printers.get(ip);
+    if (!conn.destroyed) return conn;
+  }
 
-  printer.on("connect", () => {
-    console.log("🖨️ Printer connected");
+  return new Promise((resolve, reject) => {
+    const conn = net.createConnection(PRINTER_PORT, ip, () => {
+      console.log("🖨️ Printer connected:", ip);
+      printers.set(ip, conn);
+      resolve(conn);
+    });
+
+    conn.on("error", (err) => {
+      console.error("Printer error:", err);
+      printers.delete(ip);
+      reject(err);
+    });
+
+    conn.on("close", () => {
+      console.log("Printer connection closed:", ip);
+      printers.delete(ip);
+    });
   });
-
-  printer.on("error", (err) => {
-    console.error("Printer error:", err);
-    printer = null;
-  });
-
-  printer.on("close", () => {
-    console.log("Printer connection closed");
-    printer = null;
-  });
-
-  return printer;
 }
 
 function closePrinter() {
@@ -90,7 +101,7 @@ function alignLeftRightCenter(
   left = " ",
   right = " ",
   center = " ",
-  lineWidth = 42
+  lineWidth = 42,
 ) {
   const leftLen = [...left].length;
   const centerLen = [...center].length;
@@ -144,8 +155,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew("מחיר"),
         reverseHebrew("כמות"),
-        reverseHebrew("פריט")
-      )
+        reverseHebrew("פריט"),
+      ),
     );
   let total = 0;
 
@@ -154,8 +165,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
         String(item.amount),
-        reverseHebrew(item.name)
-      )
+        reverseHebrew(item.name),
+      ),
     );
 
     if (item.extra) {
@@ -172,8 +183,8 @@ async function styleRequestBill(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`
-            )
+                }`,
+            ),
           );
         }
 
@@ -185,8 +196,8 @@ async function styleRequestBill(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
-            )
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
+            ),
           );
 
           for (const num of item.extra[key]) {
@@ -195,12 +206,12 @@ async function styleRequestBill(order) {
                 " ".repeat(centerRightGap + 3) +
                   infoItem.extra[key].items[num]?.name +
                   " ".repeat(
-                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length
+                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length,
                   ) +
                   infoItem.extra[key].items[num]?.price +
                   " " +
-                  'ש"ח'
-              )
+                  'ש"ח',
+              ),
             );
           }
         }
@@ -211,6 +222,12 @@ async function styleRequestBill(order) {
   }
 
   //Content end
+
+  let template = `סך הכל (כולל אחוז%): `;
+  const allInAll = template.replace(
+    "אחוז",
+    Math.floor((order.percent - 1) * 100),
+  );
 
   buffer = buffer
     .bold(true)
@@ -223,20 +240,19 @@ async function styleRequestBill(order) {
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent - total)) +
-        reverseHebrew("שירות " + ") רשות (: ")
+        reverseHebrew("שירות " + ")רשות(: "),
     )
     .bold(true)
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent)) +
-        reverseHebrew("סך הכל: " + ")כולל " + (order.percent - 1) * 100 + "%)")
+        reverseHebrew(allInAll),
     )
     .bold(false)
     .newline()
     .newline()
     .align("center")
     .line(reverseHebrew("הנא דרגו את המסעדה שלנו"))
-    .align("center")
     .qrcode(qrCode, 2, 4, "h");
   console.log(buffer);
   return buffer.encode();
@@ -247,16 +263,82 @@ async function styleRequestBon(order) {
   const waiter = await getWaiter(order.waiterID);
 
   let buffer = encoder
-    .codepage("windows1252")
-    //Header start
+    //codepage:
+    .codepage("windows1255")
+    //PETRA name start:
+    .bold(true)
+    .height(2)
+    .width(2)
+    .align("center")
+    .line(reverseHebrew("פטרה"))
+    .bold(false)
+    .height(1)
+    .width(1)
+    //PETRA name end
+
+    //Header start:
     .align("right")
     .line(reverseHebrew("מספר שולחן: " + order.tableID))
     .line(reverseHebrew("מלצר מטפל: " + waiter))
     //.line FOR ORDER NUMBER TO DO
-    .align("left");
+    .align("right");
+
   //Header end
 
-  buffer = buffer.bold(true).line(SEPERATOR).bold(false);
+  for (const item of order.items.order) {
+    buffer = buffer.line(
+      alignLeftRightCenter("", String(item.amount), reverseHebrew(item.name)),
+    );
+
+    if (item.extra) {
+      const infoItem = (await getItem(item.id))[0];
+      buffer = buffer.align("right");
+      for (const key of Object.keys(infoItem.extra)) {
+        if (
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "radio"
+        ) {
+          buffer = buffer.line(
+            reverseHebrew(
+              " ".repeat(centerRightGap + 2) +
+                `${translation[key]}: ${
+                  infoItem.extra[key].items[item.extra[key]]?.name ?? ""
+                }`,
+            ),
+          );
+        }
+
+        if (
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "checkbox"
+        ) {
+          console.log(infoItem);
+          buffer = buffer.line(
+            reverseHebrew(
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
+            ),
+          );
+
+          for (const num of item.extra[key]) {
+            buffer = buffer.line(
+              reverseHebrew(
+                " ".repeat(centerRightGap + 3) +
+                  infoItem.extra[key].items[num]?.name,
+              ),
+            );
+          }
+        }
+      }
+      if (item.extra.comment) {
+        buffer = buffer.line(reverseHebrew(item.extra.comment));
+      }
+    }
+    buffer = buffer.align("left");
+  }
+
+  return buffer.encode();
 }
 
 async function processRequest(order) {
@@ -273,25 +355,33 @@ async function processRequest(order) {
 }
 
 async function print(order, autoClose = true) {
-  let buffer = await processRequest(order);
+  try {
+    const buffer = await processRequest(order);
+    console.log(order);
 
-  PRINTER_IP = order.printer.address;
+    const conn = await connectPrinter(order.printer.address);
 
-  const conn = await connectPrinter();
-  conn.write(buffer);
+    // Write main content
+    await delay(500);
+    conn.write(buffer);
+    await delay(500);
 
-  let outerEncoder = encoder.initialize();
-
-  for (i = 0; i < 7 * 1; i++) {
-    outerEncoder = outerEncoder.newline();
-  }
-  const outer = outerEncoder.cut("partial").encode();
-
-  conn.write(outer, async () => {
-    if (autoClose) {
-      closePrinter();
+    // Add some empty lines
+    let outerEncoder = encoder.initialize();
+    for (let i = 0; i < 7; i++) {
+      outerEncoder = outerEncoder.newline();
     }
-  });
+    const outer = outerEncoder.cut("partial").encode();
+
+    // Write cut command and optionally close
+    conn.write(outer, async () => {
+      if (autoClose) {
+        conn.end(); // closes the connection
+      }
+    });
+  } catch (err) {
+    console.error("Failed to print:", err);
+  }
 }
 
 module.exports = { print, reverseHebrew, alignLeftRightCenter };
