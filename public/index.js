@@ -145,5 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("admin").onclick = () =>
+    (window.location.href = `/admin/html/admin.html`);
+
   fetchSections();
 });

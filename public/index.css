@@ -91,6 +91,10 @@ h1 {
   -webkit-overflow-scrolling: touch;
   width: 80%;
   background-color: #ffffff;
+  scrollbar-width: none;
+}
+#section-container::-webkit-scrollbar {
+  display: none;
 }
 
 #grid {
@@ -149,4 +153,5 @@ h1 {
 .section-box {
   background-color: #9bcbff;
   border: 2px solid #78a8d9;
+  min-width: 150px;
 }
