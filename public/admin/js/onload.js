@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   */
+
+  scripts.navbar.fixNav();
 });
 
 export default {};

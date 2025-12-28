@@ -73,7 +73,7 @@
   transition: var(--tran-04);
 }
 
-.sidebar li a {
+.sidebar li label {
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -81,13 +81,27 @@
   height: 100%;
   border-radius: 15px;
   transition: var(--tran-04);
+  cursor: pointer;
 }
 
-.sidebar li a:hover {
+.sidebar li label:hover {
   background: var(--primary-color);
 }
 
-.sidebar li a:hover .icon,
-.sidebar li a:hover .text {
+.sidebar li label:hover .icon,
+.sidebar li label:hover .text {
   color: var(--sidebar-color);
+}
+
+.sidebar li label.selected {
+  background-color: var(--primary-color);
+}
+
+.sidebar li label.selected .icon,
+.sidebar li label.selected .text {
+  color: var(--sidebar-color);
+}
+
+.sidebar .menu-links {
+  margin-top: 10em;
 }

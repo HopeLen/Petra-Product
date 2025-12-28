@@ -4,4 +4,6 @@ import onload from "./onload.js";
 
 import delay from "./delay.js";
 
-export default { routes, onload, delay };
+import navbar from "./navbar.js";
+
+export default { routes, onload, delay, navbar };
