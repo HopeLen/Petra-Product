@@ -1,9 +1,11 @@
 const net = require("net");
 const EscPosEncoder = require("esc-pos-encoder");
 
+const { createCanvas, loadImage } = require("canvas");
+const fs = require("fs");
+
 const pool = require("../routes/mariadb");
 const translation = require("../assets/maps/translation-map.json");
-const { info } = require("console");
 
 const PRINTER_PORT = 9100;
 
@@ -101,7 +103,7 @@ function alignLeftRightCenter(
   left = " ",
   right = " ",
   center = " ",
-  lineWidth = 42,
+  lineWidth = 42
 ) {
   const leftLen = [...left].length;
   const centerLen = [...center].length;
@@ -155,8 +157,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew("מחיר"),
         reverseHebrew("כמות"),
-        reverseHebrew("פריט"),
-      ),
+        reverseHebrew("פריט")
+      )
     );
   let total = 0;
 
@@ -165,8 +167,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
         String(item.amount),
-        reverseHebrew(item.name),
-      ),
+        reverseHebrew(item.name)
+      )
     );
 
     if (item.extra) {
@@ -183,8 +185,8 @@ async function styleRequestBill(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`,
-            ),
+                }`
+            )
           );
         }
 
@@ -196,8 +198,8 @@ async function styleRequestBill(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
-            ),
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
+            )
           );
 
           for (const num of item.extra[key]) {
@@ -206,12 +208,12 @@ async function styleRequestBill(order) {
                 " ".repeat(centerRightGap + 3) +
                   infoItem.extra[key].items[num]?.name +
                   " ".repeat(
-                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length,
+                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length
                   ) +
                   infoItem.extra[key].items[num]?.price +
                   " " +
-                  'ש"ח',
-              ),
+                  'ש"ח'
+              )
             );
           }
         }
@@ -226,7 +228,7 @@ async function styleRequestBill(order) {
   let template = `סך הכל (כולל אחוז%): `;
   const allInAll = template.replace(
     "אחוז",
-    Math.floor((order.percent - 1) * 100),
+    Math.floor((order.percent - 1) * 100)
   );
 
   buffer = buffer
@@ -240,13 +242,13 @@ async function styleRequestBill(order) {
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent - total)) +
-        reverseHebrew("שירות " + ")רשות(: "),
+        reverseHebrew("שירות " + ")רשות(: ")
     )
     .bold(true)
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent)) +
-        reverseHebrew(allInAll),
+        reverseHebrew(allInAll)
     )
     .bold(false)
     .newline()
@@ -287,7 +289,7 @@ async function styleRequestBon(order) {
 
   for (const item of order.items.order) {
     buffer = buffer.line(
-      alignLeftRightCenter("", String(item.amount), reverseHebrew(item.name)),
+      alignLeftRightCenter("", String(item.amount), reverseHebrew(item.name))
     );
 
     if (item.extra) {
@@ -304,8 +306,8 @@ async function styleRequestBon(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`,
-            ),
+                }`
+            )
           );
         }
 
@@ -317,16 +319,16 @@ async function styleRequestBon(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
-            ),
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
+            )
           );
 
           for (const num of item.extra[key]) {
             buffer = buffer.line(
               reverseHebrew(
                 " ".repeat(centerRightGap + 3) +
-                  infoItem.extra[key].items[num]?.name,
-              ),
+                  infoItem.extra[key].items[num]?.name
+              )
             );
           }
         }
@@ -384,4 +386,31 @@ async function print(order, autoClose = true) {
   }
 }
 
-module.exports = { print, reverseHebrew, alignLeftRightCenter };
+async function printImage(img, width, height, address, autoClose = true) {
+  try {
+    const buffer = encoder.image(img, width, height).encode();
+    const conn = await connectPrinter(address);
+
+    // Write main content
+    await delay(500);
+    conn.write(buffer);
+    await delay(500);
+
+    let outerEncoder = encoder.initialize();
+    for (let i = 0; i < 7; i++) {
+      outerEncoder = outerEncoder.newline();
+    }
+    const outer = outerEncoder.cut("partial").encode();
+
+    // Write cut command and optionally close
+    conn.write(outer, async () => {
+      if (autoClose) {
+        conn.end(); // closes the connection
+      }
+    });
+  } catch (err) {
+    console.error("Failed to print:", err);
+  }
+}
+
+module.exports = { print, printImage };
