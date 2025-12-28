@@ -25,7 +25,7 @@ async function getOrder(tableID) {
   renderOrderList(
     document.getElementById("current-order"),
     order.order,
-    mutability
+    mutability,
   );
   return order;
 }
@@ -55,7 +55,7 @@ function renderOrderList(ul, list, mutability = true) {
   `;
     li.onclick = async () => {
       const infoItem = await fetch(`/api/get-menu-item/${item.id}`).then(
-        (response) => response.json()
+        (response) => response.json(),
       );
       await createPopupFromItem(infoItem[0]);
       await delay(100);
@@ -95,7 +95,7 @@ async function getInfo(tableID, waiterID) {
   const waiter = document.getElementById("waiterID");
 
   const waiterName = await fetch(`/api/get-waiter-name/${waiterID}`).then(
-    (res) => res.json()
+    (res) => res.json(),
   );
 
   console.log("This is the waiter's name: ");
@@ -126,7 +126,7 @@ async function getMenuSections(checked) {
     menu,
     map,
     document.getElementById("menu-sections"),
-    classList
+    classList,
   );
 }
 
@@ -189,7 +189,7 @@ function addItemToOrder(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -228,7 +228,7 @@ async function createPopupFromItem(item) {
         key,
         tranlation[key],
         item.extra[key].items,
-        item.extra[key].type
+        item.extra[key].type,
       );
     });
   }
@@ -258,7 +258,7 @@ function addSimpleItem(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -286,7 +286,7 @@ function addComplexItem(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -316,7 +316,7 @@ async function fetchMenu(id) {
 async function sendOrder(tableID) {
   console.log("Sending order to table: ", tableID);
   const existingOrder = await fetch(`/api/get-table-order/${tableID}`).then(
-    (response) => response.json()
+    (response) => response.json(),
   );
   let newOrder;
   console.log(existingOrder);
@@ -338,7 +338,7 @@ async function sendOrder(tableID) {
   renderOrderList(
     document.getElementById("current-order"),
     newOrder,
-    mutability
+    mutability,
   );
 
   await sendingTheOrder(tableID, newOrder);
@@ -348,7 +348,7 @@ async function sendOrder(tableID) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
   console.log("Writing the price");
   await writePrice(tableID);
@@ -356,14 +356,14 @@ async function sendOrder(tableID) {
 
 async function getAllPrinters() {
   const printers = await fetch(`/api/get-all-printers`).then((res) =>
-    res.json()
+    res.json(),
   );
   return printers;
 }
 
 async function getItemPrinters(id) {
   const itemPrinters = await fetch(`/api/get-items-printers/${id}`).then(
-    (res) => res.json()
+    (res) => res.json(),
   );
   return itemPrinters;
 }
@@ -418,7 +418,7 @@ async function seperatePrintRequest(order) {
         items: { order: array },
       };
 
-      await sendPrintRequest(options);
+      //await sendPrintRequest(options);
     }
     await delay(100);
   }
@@ -465,7 +465,7 @@ async function sendingTheOrder(tableID, newOrder) {
 
 async function getPrice(tableID) {
   const order = await fetch(`/api/get-table-order/${tableID}`).then(
-    (response) => response.json()
+    (response) => response.json(),
   );
   let total = 0;
 

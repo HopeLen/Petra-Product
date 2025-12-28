@@ -1,16 +1,87 @@
-const { createCanvas } = require("canvas");
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
+const bidiFactory = require("bidi-js");
+const bidi = bidiFactory();
 
 const { printImage } = require("./print");
 
+const pool = require("../routes/mariadb");
+const translation = require("../assets/maps/translation-map.json");
+
 const WIDTH = 576;
-const HEIGHT = 1200;
+const HEIGHT = 5000;
 const MARGIN = 24;
 const LINE_HEIGHT = 32;
+
+const LRM = "\u200E";
+const RLM = "\u200F";
 
 let y = MARGIN;
 
 /* ----------------- HELPERS ----------------- */
+
+function drawRoundedRect(ctx, x, yTop, width, yBottom, radius) {
+  const height = yBottom - yTop;
+  if (radius > width / 2) radius = width / 2;
+  if (radius > height / 2) radius = height / 2;
+
+  ctx.beginPath();
+  ctx.moveTo(x + radius, yTop);
+  ctx.lineTo(x + width - radius, yTop);
+  ctx.arcTo(x + width, yTop, x + width, yTop + radius, radius);
+  ctx.lineTo(x + width, yTop + height - radius);
+  ctx.arcTo(
+    x + width,
+    yTop + height,
+    x + width - radius,
+    yTop + height,
+    radius,
+  );
+  ctx.lineTo(x + radius, yTop + height);
+  ctx.arcTo(x, yTop + height, x, yTop + height - radius, radius);
+  ctx.lineTo(x, yTop + radius);
+  ctx.arcTo(x, yTop, x + radius, yTop, radius);
+  ctx.closePath();
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function toPercent(num) {
+  console.log((num - 1) * 100);
+  return Math.round((num - 1) * 100);
+}
+
+async function getItem(id) {
+  try {
+    const rows = await pool.query("SELECT * FROM menu WHERE id = ?", id);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+}
+
+function containsHebrew(text) {
+  const hebrewRegex = /[\u0590-\u05FF]/;
+  return hebrewRegex.test(text);
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getWaiter(id) {
+  try {
+    const rows = await pool.query("SELECT name FROM users WHERE id = ?", id);
+    console.log(rows);
+    return rows[0].name;
+  } catch (err) {
+    console.error(err);
+    return err;
+  }
+}
 
 function lineIncrease(size = 28) {
   if (size > LINE_HEIGHT) {
@@ -20,6 +91,14 @@ function lineIncrease(size = 28) {
   }
 }
 
+function nextMultipleOf8(n) {
+  return Math.ceil(n / 8) * 8;
+}
+
+function newLine() {
+  y += LINE_HEIGHT / 2;
+}
+
 function center(ctx, text, size = 28, bold = false) {
   ctx.font = `${bold ? "bold" : ""} ${size}px Arial`;
   ctx.textAlign = "center";
@@ -27,21 +106,23 @@ function center(ctx, text, size = 28, bold = false) {
   lineIncrease(size);
 }
 
-function left(ctx, text, size = 24) {
+function right(ctx, text, size = 24) {
   ctx.font = `${size}px Arial`;
-  ctx.textAlign = "left";
-  ctx.fillText(text, MARGIN, y);
+  ctx.textAlign = "right";
+  ctx.fillText(text, WIDTH - MARGIN, y);
   lineIncrease(size);
 }
 
 function separator(ctx) {
-  ctx.font = `24px Arial`;
-  ctx.textAlign = "left";
-  ctx.fillText("-".repeat(67), MARGIN, y);
-  lineIncrease();
+  ctx.beginPath();
+  ctx.moveTo(0, y);
+  ctx.lineTo(WIDTH, y);
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  y += 10;
 }
 
-function leftRight(ctx, leftText, rightText, size = 24) {
+function leftRight(ctx, leftText, rightText, size = 28) {
   ctx.font = `${size}px Arial`;
   ctx.textAlign = "left";
   ctx.fillText(leftText, MARGIN, y);
@@ -52,10 +133,40 @@ function leftRight(ctx, leftText, rightText, size = 24) {
   lineIncrease(size);
 }
 
+function leftCenterRight(
+  ctx,
+  leftText,
+  centerText,
+  rightText,
+  bold = false,
+  centerOffset = 170,
+  size = 28,
+) {
+  console.log(bold);
+  ctx.font = `${bold ? "bold" : ""} ${size}px Arial`;
+
+  // Left
+  ctx.textAlign = "left";
+  ctx.fillText(leftText, MARGIN, y);
+
+  // Center (with offset)
+  ctx.textAlign = "right";
+  ctx.fillText(centerText, WIDTH / 2 + centerOffset, y);
+
+  // Right
+  ctx.textAlign = "right";
+  ctx.fillText(rightText, WIDTH - MARGIN, y);
+
+  lineIncrease(size);
+}
+
 /* ----------------- RECEIPT ----------------- */
 async function printCanvas(order, autoClose = true) {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext("2d");
+  const waiter = await getWaiter(order.waiterID);
+
+  console.log(order);
 
   // Background
   ctx.fillStyle = "#ffffff";
@@ -66,28 +177,126 @@ async function printCanvas(order, autoClose = true) {
   ctx.textBaseline = "top";
 
   // Header
-  center(ctx, "פטרה", 48, true);
-  separator(ctx);
+  center(ctx, "פטרה", 60, true);
+  newLine();
 
   // Order info
-  left(ctx, "Order #1245");
-  left(ctx, "2025-01-28 14:35");
+  leftRight(ctx, "מספר הזמנה: " + 12345, "שולחן מספר: " + order.tableID);
   separator(ctx);
 
   // Items
-  leftRight(ctx, "Burger", "25₪");
-  leftRight(ctx, "Fries", "12₪");
-  leftRight(ctx, "Cola", "8₪");
+
+  leftCenterRight(ctx, "מחיר", "פריט", "כמות");
+
+  let total = 0;
+  for (const item of order.items.order) {
+    let startY = y;
+    console.log(item);
+    leftCenterRight(
+      ctx,
+      "₪" + item.price * item.amount + ".00",
+      item.name,
+      item.amount,
+    );
+
+    if (item.extra) {
+      const infoItem = (await getItem(item.id))[0];
+      for (const key of Object.keys(infoItem.extra)) {
+        if (
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "radio"
+        ) {
+          let string;
+
+          console.log(
+            key,
+            containsHebrew(infoItem.extra[key].items[item.extra[key]].name),
+          );
+          if (containsHebrew(infoItem.extra[key].items[item.extra[key]].name)) {
+            string =
+              " ".repeat(MARGIN) +
+              translation[key] +
+              ": " +
+              (infoItem.extra[key].items[item.extra[key]]?.name ?? "");
+          } else {
+            string =
+              " ".repeat(MARGIN) +
+              (infoItem.extra[key].items[item.extra[key]]?.name ?? "") +
+              " :" +
+              translation[key];
+          }
+
+          leftCenterRight(ctx, "", string, "");
+        }
+        if (
+          key !== "variations" &&
+          key !== "comment" &&
+          infoItem.extra[key].type === "checkbox" &&
+          item.extra[key]
+        ) {
+          console.log(infoItem);
+          leftCenterRight(
+            ctx,
+            "",
+            " ".repeat(MARGIN) + `:${translation[key]}`,
+            "",
+          );
+
+          console.log(item.extra[key]);
+          for (const num of item.extra[key]) {
+            leftCenterRight(
+              ctx,
+              "₪" + infoItem.extra[key].items[num]?.price + ".00",
+              infoItem.extra[key].items[num]?.name + " ".repeat(5),
+              "",
+            );
+          }
+        }
+      }
+    }
+    if (item.extra) {
+      drawRoundedRect(ctx, 5, startY - 2, WIDTH - 22, y, 10);
+    }
+    newLine();
+    total += item.price * item.amount;
+  }
+
   separator(ctx);
 
   // Totals
-  leftRight(ctx, "Subtotal", "45₪");
-  leftRight(ctx, "VAT (17%)", "7.65₪");
-  separator(ctx);
-  leftRight(ctx, "TOTAL", "52.65₪", 28);
+  newLine();
+  leftCenterRight(
+    ctx,
+    "₪" + Math.round(total * order.percent - total) + ".00",
+    "",
+    "כולל: " + toPercent(order.percent) + "% " + "שירות (רשות) ",
+    true,
+  );
+  console.log(total);
+  console.log();
+
+  leftCenterRight(
+    ctx,
+    "₪" + Math.round(total * order.percent) + ".00",
+    "",
+    ":סך לתשלום",
+    true,
+  );
 
   lineIncrease();
-  center(ctx, "Thank you!", 24);
+  separator(ctx);
+
+  leftCenterRight(ctx, "", order.time, "");
+  leftCenterRight(ctx, "", order.date, "");
+  leftCenterRight(ctx, "", "מלצר מטפל: " + waiter, "");
+
+  newLine();
+
+  leftCenterRight(ctx, "", "", "תודה שבחרתם פטרה!");
+  leftCenterRight(ctx, "088-65-16-10", "", ":לסגירת אירעוים");
+  leftCenterRight(ctx, "", "", "תודה ולהתראות");
+  center(ctx, "!דרגו את המסעדה שלנו");
 
   // Trim
   const finalCanvas = createCanvas(WIDTH, y + MARGIN);
@@ -95,9 +304,15 @@ async function printCanvas(order, autoClose = true) {
 
   fs.writeFileSync("helpers/image.png", finalCanvas.toBuffer("image/png"));
 
-  printImage(finalCanvas, WIDTH, HEIGHT, order.printer.address);
+  printImage(
+    finalCanvas,
+    WIDTH,
+    nextMultipleOf8(y + MARGIN),
+    order.printer.address,
+  );
 
   y = MARGIN;
+  console.log(waiter);
 }
 
 module.exports = { printCanvas };

@@ -7,7 +7,7 @@ escpos.Network = require("escpos-network");
 
 const EscPosEncoder = require("esc-pos-encoder");
 
-const { print } = require("../helpers/print");
+const { print, printQR } = require("../helpers/print");
 
 const { printCanvas } = require("../helpers/printCanvas");
 
@@ -22,7 +22,7 @@ router.get("/get-items-printers/:id", async (req, res) => {
 
   const [printers] = await pool.query(
     "SELECT printers FROM menu WHERE id=?",
-    id
+    id,
   );
   console.log(printers);
   res.json(printers);
