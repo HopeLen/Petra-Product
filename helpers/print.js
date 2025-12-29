@@ -422,13 +422,12 @@ async function printImage(img, width, height, address, autoClose = true) {
 
 async function printQR(qr) {
   let buffer = encoder
-    .initialize()
     .align("center")
-    .qrcode(qr, 2, 4, "h")
+    .line(qr, 2, 4, "h")
     .newline()
     .newline()
     .encode();
-  const conn = await connectPrinter("192.168.10.59");
+  const conn = await connectPrinter("192.168.10.66");
 
   conn.write(buffer);
   delay(500);
