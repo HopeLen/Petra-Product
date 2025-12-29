@@ -386,7 +386,14 @@ async function print(order, autoClose = true) {
   }
 }
 
-async function printImage(img, width, height, address, autoClose = true) {
+async function printImage(
+  img,
+  width,
+  height,
+  address,
+  qr = false,
+  autoClose = true,
+) {
   try {
     console.log(height);
     const buffer = encoder.initialize().image(img, width, height).encode();
@@ -396,9 +403,11 @@ async function printImage(img, width, height, address, autoClose = true) {
     conn.write(buffer);
     await delay(500);
 
-    conn.write(
-      encoder.initialize().align("center").qrcode(qrCode, 2, 4, "h").encode(),
-    );
+    if (qr) {
+      conn.write(
+        encoder.initialize().align("center").qrcode(qrCode, 2, 4, "h").encode(),
+      );
+    }
 
     let outerEncoder = encoder
       .initialize()

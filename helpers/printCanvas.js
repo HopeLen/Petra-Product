@@ -18,12 +18,24 @@ const font = "Ariel";
 /* ----------------- HELPERS ----------------- */
 
 function hasNonVariationKeys(item) {
-  return (
-    item.extra &&
-    Object.keys(item.extra).some(
-      (key) => key !== "variations" && key !== "comment"
-    )
-  );
+  try {
+    return (
+      item.extra &&
+      Object.keys(item.extra).some(
+        (key) => key !== "variations" && key !== "comment",
+      )
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+function commentExsists(item) {
+  try {
+    return item.comment && item.comment !== "";
+  } catch (e) {
+    return false;
+  }
 }
 
 function drawRoundedRect(ctx, x, yTop, width, yBottom, radius) {
@@ -41,7 +53,7 @@ function drawRoundedRect(ctx, x, yTop, width, yBottom, radius) {
     yTop + height,
     x + width - radius,
     yTop + height,
-    radius
+    radius,
   );
   ctx.lineTo(x + radius, yTop + height);
   ctx.arcTo(x, yTop + height, x, yTop + height - radius, radius);
@@ -146,7 +158,7 @@ function leftCenterRight(
   rightText,
   bold = false,
   centerOffset = 170,
-  size = 28
+  size = 28,
 ) {
   console.log(bold);
   ctx.font = `${bold ? "bold" : ""} ${size}px ${font}`;
@@ -202,18 +214,18 @@ async function printBill(order) {
       ctx,
       "₪" + item.price * item.amount + ".00",
       item.name,
-      item.amount
+      item.amount,
     );
     const infoItem = (await getItem(item.id))[0];
 
-    if (infoItem.extra) {
+    if (hasNonVariationKeys(infoItem.extra)) {
       for (const key of Object.keys(infoItem.extra)) {
         if (key !== "variations" && infoItem.extra[key].type === "radio") {
           let string;
 
           console.log(
             key,
-            containsHebrew(infoItem.extra[key].items[item.extra[key]].name)
+            containsHebrew(infoItem.extra[key].items[item.extra[key]].name),
           );
           if (containsHebrew(infoItem.extra[key].items[item.extra[key]].name)) {
             string =
@@ -241,7 +253,7 @@ async function printBill(order) {
             ctx,
             "",
             " ".repeat(MARGIN) + `:${translation[key]}`,
-            ""
+            "",
           );
 
           console.log(item.extra[key]);
@@ -250,7 +262,7 @@ async function printBill(order) {
               ctx,
               "₪" + infoItem.extra[key].items[num]?.price + ".00",
               infoItem.extra[key].items[num]?.name + " ".repeat(5),
-              ""
+              "",
             );
           }
         }
@@ -272,7 +284,7 @@ async function printBill(order) {
     "₪" + Math.round(total * order.percent - total) + ".00",
     "",
     "כולל: " + toPercent(order.percent) + "% " + "שירות (רשות) ",
-    true
+    true,
   );
   console.log(total);
   console.log();
@@ -282,7 +294,7 @@ async function printBill(order) {
     "₪" + Math.round(total * order.percent) + ".00",
     "",
     ":סך לתשלום",
-    true
+    true,
   );
 
   lineIncrease();
@@ -309,7 +321,8 @@ async function printBill(order) {
     finalCanvas,
     WIDTH,
     nextMultipleOf8(y + MARGIN),
-    order.printer.address
+    order.printer.address,
+    true,
   );
 
   y = MARGIN;
@@ -333,6 +346,7 @@ async function printBon(order) {
   newLine();
 
   // Order info
+  leftRight(ctx, "", "מלצר מטפל: " + waiter);
   leftRight(ctx, "מספר הזמנה: " + 12345, "שולחן מספר: " + order.tableID);
   separator(ctx);
 
@@ -358,7 +372,7 @@ async function printBon(order) {
 
           console.log(
             key,
-            containsHebrew(infoItem.extra[key].items[item.extra[key]].name)
+            containsHebrew(infoItem.extra[key].items[item.extra[key]].name),
           );
           if (containsHebrew(infoItem.extra[key].items[item.extra[key]].name)) {
             string =
@@ -387,7 +401,7 @@ async function printBon(order) {
             ctx,
             "",
             " ".repeat(MARGIN) + `:${translation[key]}`,
-            ""
+            "",
           );
 
           for (const num of item.extra[key]) {
@@ -395,15 +409,15 @@ async function printBon(order) {
               ctx,
               "",
               infoItem.extra[key].items[num]?.name + " ".repeat(5),
-              ""
+              "",
             );
           }
         }
       }
     }
-    if (item.extra.comment && item.extra.comment !== "") {
+    if (commentExsists(item.extra)) {
       console.log("entered");
-      leftCenterRight(ctx, "", item.extra.comment + " ".repeat(5), "");
+      leftCenterRight(ctx, "", item.extra.comment + " ".repeat(5) + "**", "");
     }
     if (hasNonVariationKeys(infoItem)) {
       drawRoundedRect(ctx, 5, startY - 2, WIDTH - 22, y, 10);
@@ -412,10 +426,12 @@ async function printBon(order) {
     total += item.price * item.amount;
   }
 
+  separator(ctx);
+  leftCenterRight(ctx, order.time, "", order.date);
+
   // Trim
   const finalCanvas = createCanvas(WIDTH, y + MARGIN);
   finalCanvas.getContext("2d").drawImage(canvas, 0, 0);
-  y = MARGIN;
 
   fs.writeFileSync("helpers/image.png", finalCanvas.toBuffer("image/png"));
 
@@ -423,8 +439,9 @@ async function printBon(order) {
     finalCanvas,
     WIDTH,
     nextMultipleOf8(y + MARGIN),
-    order.printer.address
+    order.printer.address,
   );
+  y = MARGIN;
 }
 
 module.exports = { printBill, printBon };
