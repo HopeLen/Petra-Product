@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require("canvas");
+const { createCanvas, registerFont } = require("canvas");
 const fs = require("fs");
 const bidiFactory = require("bidi-js");
 const bidi = bidiFactory();
@@ -13,12 +13,18 @@ const HEIGHT = 5000;
 const MARGIN = 24;
 const LINE_HEIGHT = 32;
 
-const LRM = "\u200E";
-const RLM = "\u200F";
-
 let y = MARGIN;
-
+const font = "Ariel";
 /* ----------------- HELPERS ----------------- */
+
+function hasNonVariationKeys(item) {
+  return (
+    item.extra &&
+    Object.keys(item.extra).some(
+      (key) => key !== "variations" && key !== "comment"
+    )
+  );
+}
 
 function drawRoundedRect(ctx, x, yTop, width, yBottom, radius) {
   const height = yBottom - yTop;
@@ -35,7 +41,7 @@ function drawRoundedRect(ctx, x, yTop, width, yBottom, radius) {
     yTop + height,
     x + width - radius,
     yTop + height,
-    radius,
+    radius
   );
   ctx.lineTo(x + radius, yTop + height);
   ctx.arcTo(x, yTop + height, x, yTop + height - radius, radius);
@@ -100,14 +106,14 @@ function newLine() {
 }
 
 function center(ctx, text, size = 28, bold = false) {
-  ctx.font = `${bold ? "bold" : ""} ${size}px Arial`;
+  ctx.font = `${bold ? "bold" : ""} ${size}px ${font}`;
   ctx.textAlign = "center";
   ctx.fillText(text, WIDTH / 2, y);
   lineIncrease(size);
 }
 
 function right(ctx, text, size = 24) {
-  ctx.font = `${size}px Arial`;
+  ctx.font = `${size}px ${font}`;
   ctx.textAlign = "right";
   ctx.fillText(text, WIDTH - MARGIN, y);
   lineIncrease(size);
@@ -123,7 +129,7 @@ function separator(ctx) {
 }
 
 function leftRight(ctx, leftText, rightText, size = 28) {
-  ctx.font = `${size}px Arial`;
+  ctx.font = `${size}px ${font}`;
   ctx.textAlign = "left";
   ctx.fillText(leftText, MARGIN, y);
 
@@ -140,10 +146,10 @@ function leftCenterRight(
   rightText,
   bold = false,
   centerOffset = 170,
-  size = 28,
+  size = 28
 ) {
   console.log(bold);
-  ctx.font = `${bold ? "bold" : ""} ${size}px Arial`;
+  ctx.font = `${bold ? "bold" : ""} ${size}px ${font}`;
 
   // Left
   ctx.textAlign = "left";
@@ -161,7 +167,7 @@ function leftCenterRight(
 }
 
 /* ----------------- RECEIPT ----------------- */
-async function printCanvas(order, autoClose = true) {
+async function printBill(order) {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext("2d");
   const waiter = await getWaiter(order.waiterID);
@@ -173,7 +179,7 @@ async function printCanvas(order, autoClose = true) {
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   ctx.fillStyle = "#000000";
-  ctx.font = "24px Arial";
+  ctx.font = `24px ${font}`;
   ctx.textBaseline = "top";
 
   // Header
@@ -196,11 +202,152 @@ async function printCanvas(order, autoClose = true) {
       ctx,
       "₪" + item.price * item.amount + ".00",
       item.name,
-      item.amount,
+      item.amount
     );
+    const infoItem = (await getItem(item.id))[0];
 
-    if (item.extra) {
-      const infoItem = (await getItem(item.id))[0];
+    if (infoItem.extra) {
+      for (const key of Object.keys(infoItem.extra)) {
+        if (key !== "variations" && infoItem.extra[key].type === "radio") {
+          let string;
+
+          console.log(
+            key,
+            containsHebrew(infoItem.extra[key].items[item.extra[key]].name)
+          );
+          if (containsHebrew(infoItem.extra[key].items[item.extra[key]].name)) {
+            string =
+              " ".repeat(MARGIN) +
+              translation[key] +
+              ": " +
+              (infoItem.extra[key].items[item.extra[key]]?.name ?? "");
+          } else {
+            string =
+              " ".repeat(MARGIN) +
+              (infoItem.extra[key].items[item.extra[key]]?.name ?? "") +
+              " :" +
+              translation[key];
+          }
+
+          leftCenterRight(ctx, "", string, "");
+        }
+        if (
+          key !== "variations" &&
+          infoItem.extra[key].type === "checkbox" &&
+          item.extra[key]
+        ) {
+          console.log(infoItem);
+          leftCenterRight(
+            ctx,
+            "",
+            " ".repeat(MARGIN) + `:${translation[key]}`,
+            ""
+          );
+
+          console.log(item.extra[key]);
+          for (const num of item.extra[key]) {
+            leftCenterRight(
+              ctx,
+              "₪" + infoItem.extra[key].items[num]?.price + ".00",
+              infoItem.extra[key].items[num]?.name + " ".repeat(5),
+              ""
+            );
+          }
+        }
+      }
+    }
+    if (hasNonVariationKeys(infoItem)) {
+      drawRoundedRect(ctx, 5, startY - 2, WIDTH - 22, y, 10);
+    }
+    newLine();
+    total += item.price * item.amount;
+  }
+
+  separator(ctx);
+
+  // Totals
+  newLine();
+  leftCenterRight(
+    ctx,
+    "₪" + Math.round(total * order.percent - total) + ".00",
+    "",
+    "כולל: " + toPercent(order.percent) + "% " + "שירות (רשות) ",
+    true
+  );
+  console.log(total);
+  console.log();
+
+  leftCenterRight(
+    ctx,
+    "₪" + Math.round(total * order.percent) + ".00",
+    "",
+    ":סך לתשלום",
+    true
+  );
+
+  lineIncrease();
+  separator(ctx);
+
+  leftCenterRight(ctx, "", order.time, "");
+  leftCenterRight(ctx, "", order.date, "");
+  leftCenterRight(ctx, "", "מלצר מטפל: " + waiter, "");
+
+  newLine();
+
+  leftCenterRight(ctx, "", "", "!תודה שבחרתם פטרה");
+  leftCenterRight(ctx, "088-65-16-10", "", ":לסגירת אירועים");
+  leftCenterRight(ctx, "", "", "תודה ולהתראות");
+  center(ctx, "!דרגו את המסעדה שלנו");
+
+  // Trim
+  const finalCanvas = createCanvas(WIDTH, y + MARGIN);
+  finalCanvas.getContext("2d").drawImage(canvas, 0, 0);
+
+  fs.writeFileSync("helpers/image.png", finalCanvas.toBuffer("image/png"));
+
+  printImage(
+    finalCanvas,
+    WIDTH,
+    nextMultipleOf8(y + MARGIN),
+    order.printer.address
+  );
+
+  y = MARGIN;
+}
+
+async function printBon(order) {
+  const canvas = createCanvas(WIDTH, HEIGHT);
+  const ctx = canvas.getContext("2d");
+  const waiter = await getWaiter(order.waiterID);
+
+  // Background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  ctx.fillStyle = "#000000";
+  ctx.font = `24px ${font}`;
+  ctx.textBaseline = "top";
+
+  // Header
+  center(ctx, "פטרה", 60, true);
+  newLine();
+
+  // Order info
+  leftRight(ctx, "מספר הזמנה: " + 12345, "שולחן מספר: " + order.tableID);
+  separator(ctx);
+
+  //Items
+  leftCenterRight(ctx, "", "פריט", "כמות");
+
+  let total = 0;
+  for (const item of order.items.order) {
+    let startY = y;
+    console.log(item);
+    leftCenterRight(ctx, "", item.name, item.amount);
+
+    const infoItem = (await getItem(item.id))[0];
+
+    if (infoItem.extra) {
       for (const key of Object.keys(infoItem.extra)) {
         if (
           key !== "variations" &&
@@ -211,7 +358,7 @@ async function printCanvas(order, autoClose = true) {
 
           console.log(
             key,
-            containsHebrew(infoItem.extra[key].items[item.extra[key]].name),
+            containsHebrew(infoItem.extra[key].items[item.extra[key]].name)
           );
           if (containsHebrew(infoItem.extra[key].items[item.extra[key]].name)) {
             string =
@@ -240,67 +387,35 @@ async function printCanvas(order, autoClose = true) {
             ctx,
             "",
             " ".repeat(MARGIN) + `:${translation[key]}`,
-            "",
+            ""
           );
 
-          console.log(item.extra[key]);
           for (const num of item.extra[key]) {
             leftCenterRight(
               ctx,
-              "₪" + infoItem.extra[key].items[num]?.price + ".00",
-              infoItem.extra[key].items[num]?.name + " ".repeat(5),
               "",
+              infoItem.extra[key].items[num]?.name + " ".repeat(5),
+              ""
             );
           }
         }
       }
     }
-    if (item.extra) {
+    if (item.extra.comment && item.extra.comment !== "") {
+      console.log("entered");
+      leftCenterRight(ctx, "", item.extra.comment + " ".repeat(5), "");
+    }
+    if (hasNonVariationKeys(infoItem)) {
       drawRoundedRect(ctx, 5, startY - 2, WIDTH - 22, y, 10);
     }
     newLine();
     total += item.price * item.amount;
   }
 
-  separator(ctx);
-
-  // Totals
-  newLine();
-  leftCenterRight(
-    ctx,
-    "₪" + Math.round(total * order.percent - total) + ".00",
-    "",
-    "כולל: " + toPercent(order.percent) + "% " + "שירות (רשות) ",
-    true,
-  );
-  console.log(total);
-  console.log();
-
-  leftCenterRight(
-    ctx,
-    "₪" + Math.round(total * order.percent) + ".00",
-    "",
-    ":סך לתשלום",
-    true,
-  );
-
-  lineIncrease();
-  separator(ctx);
-
-  leftCenterRight(ctx, "", order.time, "");
-  leftCenterRight(ctx, "", order.date, "");
-  leftCenterRight(ctx, "", "מלצר מטפל: " + waiter, "");
-
-  newLine();
-
-  leftCenterRight(ctx, "", "", "תודה שבחרתם פטרה!");
-  leftCenterRight(ctx, "088-65-16-10", "", ":לסגירת אירעוים");
-  leftCenterRight(ctx, "", "", "תודה ולהתראות");
-  center(ctx, "!דרגו את המסעדה שלנו");
-
   // Trim
   const finalCanvas = createCanvas(WIDTH, y + MARGIN);
   finalCanvas.getContext("2d").drawImage(canvas, 0, 0);
+  y = MARGIN;
 
   fs.writeFileSync("helpers/image.png", finalCanvas.toBuffer("image/png"));
 
@@ -308,11 +423,8 @@ async function printCanvas(order, autoClose = true) {
     finalCanvas,
     WIDTH,
     nextMultipleOf8(y + MARGIN),
-    order.printer.address,
+    order.printer.address
   );
-
-  y = MARGIN;
-  console.log(waiter);
 }
 
-module.exports = { printCanvas };
+module.exports = { printBill, printBon };

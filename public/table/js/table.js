@@ -418,7 +418,7 @@ async function seperatePrintRequest(order) {
         items: { order: array },
       };
 
-      //await sendPrintRequest(options);
+      await sendPrintRequest(options);
     }
     await delay(100);
   }
