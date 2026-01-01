@@ -1,3 +1,5 @@
+import scripts from "./scripts.js";
+
 function fixNav() {
   const liElements = document.querySelectorAll("#menu-links li");
 
@@ -16,9 +18,6 @@ function fixNav() {
 }
 
 function select(item) {
-  const radio = item.querySelector("input");
-  console.log(radio.checked);
-
   const liElements = document.querySelectorAll("#menu-links li");
 
   liElements.forEach((li) => {
@@ -26,6 +25,8 @@ function select(item) {
   });
 
   item.querySelector("label").classList.add("selected");
+
+  scripts.content.checkContent(item.id);
 }
 
 export default { fixNav };

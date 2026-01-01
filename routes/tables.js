@@ -2,11 +2,6 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./mariadb");
 
-const escpos = require("escpos");
-escpos.Network = require("escpos-network");
-const net = require("net");
-const { table } = require("console");
-
 // Get tables from a section
 router.get("/get-tables-from-section/:sectionId", async (req, res) => {
   let conn;

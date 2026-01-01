@@ -1,5 +1,6 @@
 let currentOrder = [];
 let tableID;
+let waiterID;
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -93,7 +94,7 @@ function buildItemLabel(item) {
 async function getInfo(tableID, waiterID) {
   const table = document.getElementById("tableID");
   const waiter = document.getElementById("waiterID");
-
+  console.log(waiterID);
   const waiterName = await fetch(`/api/get-waiter-name/${waiterID}`).then(
     (res) => res.json()
   );
@@ -313,20 +314,46 @@ async function fetchMenu(id) {
   createMenuItems(data, container, classList);
 }
 
+async function createInfo(tableId) {
+  const info = {
+    waiter: waiterID,
+    table: tableID,
+    openTime: new Date().toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+    openDate: new Date().toLocaleDateString("en-GB"),
+    closeTime: null,
+    closeDate: null,
+  };
+
+  fetch(`/api/post-table-info`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(info),
+  });
+}
+
 async function sendOrder(tableID) {
   console.log("Sending order to table: ", tableID);
   const existingOrder = await fetch(`/api/get-table-order/${tableID}`).then(
     (response) => response.json()
   );
   let newOrder;
-  console.log(existingOrder);
-  if (existingOrder.order) {
+  console.log("existingOrder", existingOrder);
+  if (existingOrder.order.length !== 0) {
     newOrder = existingOrder.order;
     currentOrder.forEach((item) => {
       addOrIncrease(newOrder, item);
     });
   } else {
     newOrder = currentOrder;
+    console.log("Creating information...");
+
+    await createInfo(tableID);
   }
   console.log(newOrder);
 
@@ -334,16 +361,17 @@ async function sendOrder(tableID) {
   console.log(currentOrder);
   let mutability = true;
 
-  mutability = false;
   renderOrderList(
     document.getElementById("current-order"),
     newOrder,
     mutability
   );
 
-  await sendingTheOrder(tableID, newOrder);
-  await seperatePrintRequest(currentOrder);
+  sendingTheOrder(tableID, newOrder);
+  seperatePrintRequest(currentOrder);
   currentOrder = [];
+
+  mutability = false;
   console.log("Current Order: ", currentOrder);
   renderOrderList(
     document.getElementById("chosen-items"),
@@ -351,7 +379,9 @@ async function sendOrder(tableID) {
     mutability
   );
   console.log("Writing the price");
-  await writePrice(tableID);
+  writePrice(tableID);
+
+  tableStatusChange(tableID, "TAKEN");
 }
 
 async function getAllPrinters() {
@@ -493,15 +523,17 @@ document.getElementById("value-2").addEventListener("change", async () => {
 //On-load events
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
+
   tableID = params.get("tableId");
-  const waiterId = params.get("waiterId");
+  waiterID = params.get("waiterId");
+
   console.log("SUCCSESS");
   console.log(tableID);
-  console.log(waiterId);
+  console.log(waiterID);
 
   document.getElementById("order-send").onclick = () => sendOrder(tableID);
   getOrder(tableID);
-  getInfo(tableID, waiterId);
+  getInfo(tableID, waiterID);
 
   writePrice(tableID);
 
