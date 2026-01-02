@@ -119,7 +119,30 @@ router.get("/get-bill-options", async (req, res) => {
 router.get("/nullify-order/:tableID", async (req, res) => {
   const tableID = req.params.tableID;
 
-  pool.query("UPDATE tables SET `order` = NULL WHERE id = ?", tableID);
+  pool.query("UPDATE `tables` SET `order` = '[]' WHERE id = ?", tableID);
+  pool.query("UPDATE `tables` SET `information` = NULL WHERE id = ?", tableID);
+});
+
+router.get("/get-order-id/:tableID", async (req, res) => {
+  const tableID = req.params.tableID;
+
+  const result = await pool.query(
+    "SELECT `information` FROM `tables` WHERE id = ?",
+    tableID
+  );
+
+  res.json(result);
+});
+
+router.get("/get-table-status/:tableID", async (req, res) => {
+  const tableID = req.params.tableID;
+
+  const status = await pool
+    .query("SELECT `status` FROM `tables` WHERE id = ?", tableID)
+    .then((res) => res[0].status);
+
+  console.log(status);
+  res.json(status);
 });
 
 module.exports = router;

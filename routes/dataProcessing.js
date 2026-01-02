@@ -28,4 +28,46 @@ router.post("/post-table-info", express.json(), async (req, res) => {
   }
 });
 
+router.get("/change-info-table/:orderID/:destination", async (req, res) => {
+  const orderID = req.params.orderID;
+  const destination = req.params.destination;
+
+  console.log("OrderID: ", orderID);
+  console.log("Destination: ", destination);
+
+  let row = await pool
+    .query("SELECT `information` FROM `orders` WHERE orderID = ?", orderID)
+    .then((res) => res[0])
+    .then((res) => res.information);
+
+  console.log(row);
+  row.table = destination;
+  console.log(row);
+
+  await pool.query("UPDATE `orders` SET `information` = ? WHERE orderID = ?", [
+    row,
+    orderID,
+  ]);
+
+  res.json({ ok: true });
+});
+
+router.post(
+  "/post-order-to-info/:orderID",
+  express.json(),
+  async (req, res) => {
+    const orderID = req.params.orderID;
+    const order = req.body;
+    console.log("Order id: ", orderID);
+    console.log("Order: ", order);
+
+    await pool.query("UPDATE `orders` SET `order` = ? WHERE `orderID` = ?", [
+      order,
+      orderID,
+    ]);
+
+    res.json({ ok: true });
+  }
+);
+
 module.exports = router;

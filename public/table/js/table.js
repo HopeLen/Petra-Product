@@ -384,6 +384,29 @@ async function sendOrder(tableID) {
   tableStatusChange(tableID, "TAKEN");
 }
 
+async function getTableStatus(tableID) {
+  const status = await fetch(`/api/get-table-status/${tableID}`).then((res) =>
+    res.json()
+  );
+  console.log(status);
+}
+
+async function tableStatusChange(tableID, targetStatus) {
+  try {
+    await fetch("/api/set-table-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tableID,
+        targetStatus,
+      }),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
 async function getAllPrinters() {
   const printers = await fetch(`/api/get-all-printers`).then((res) =>
     res.json()
@@ -540,4 +563,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("print-bill").onclick = async () => {
     await renderBillPopup(tableID);
   };
+
+  document.getElementById("order-close").onclick = () => closeOrder(tableID);
 });

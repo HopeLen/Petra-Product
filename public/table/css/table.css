@@ -76,3 +76,7 @@ body {
 .settings .table-move {
   background-color: #5fa6a6;
 }
+
+.settings .order-close {
+  background-color: #f59e0b;
+}
