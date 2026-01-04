@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.main {
+  display: flex;
+  justify-self: center;
+  align-self: center;
+  border: 2px solid black;
+  min-width: 1000px;
+  min-height: 900px;
+  margin-top: 100px;
+  align-items: center;
+  flex-direction: column;
+}
+
+.main img {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.amount {
+  margin-top: 10px;
+  height: 5rem;
+  font-size: 3rem;
+}
+
+.sendRequest {
+  margin-top: 10px;
+  height: 5rem;
+  font-size: 3rem;
+}

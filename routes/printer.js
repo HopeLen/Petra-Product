@@ -40,4 +40,20 @@ router.post("/post-print-request", async (req, res) => {
   res.json({ ok: true });
 });
 
+router.get("/send-qr-print", async (req, res) => {
+  console.log("arrived");
+
+  await printQR();
+
+  res.json({ ok: true });
+});
+
+router.get("/send-qr-print", async (req, res) => {
+  console.log("arrived");
+
+  await printQR();
+
+  res.json({ ok: true });
+});
+
 module.exports = router;
