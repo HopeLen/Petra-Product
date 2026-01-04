@@ -7,7 +7,12 @@ escpos.Network = require("escpos-network");
 
 const EscPosEncoder = require("esc-pos-encoder");
 
-const { print, reverseHebrew, alignLeftRight } = require("../helpers/print");
+const {
+  print,
+  reverseHebrew,
+  alignLeftRight,
+  printQR,
+} = require("../helpers/print");
 
 router.get("/get-all-printers", async (req, res) => {
   const rows = await pool.query("SELECT * FROM printers");
@@ -20,7 +25,7 @@ router.get("/get-items-printers/:id", async (req, res) => {
 
   const [printers] = await pool.query(
     "SELECT printers FROM menu WHERE id=?",
-    id,
+    id
   );
   console.log(printers);
   res.json(printers);
@@ -29,6 +34,14 @@ router.get("/get-items-printers/:id", async (req, res) => {
 router.post("/post-print-request", async (req, res) => {
   const request = req.body;
   await print(request);
+  res.json({ ok: true });
+});
+
+router.get("/send-qr-print", async (req, res) => {
+  console.log("arrived");
+
+  await printQR();
+
   res.json({ ok: true });
 });
 

@@ -101,7 +101,7 @@ function alignLeftRightCenter(
   left = " ",
   right = " ",
   center = " ",
-  lineWidth = 42,
+  lineWidth = 42
 ) {
   const leftLen = [...left].length;
   const centerLen = [...center].length;
@@ -155,8 +155,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew("מחיר"),
         reverseHebrew("כמות"),
-        reverseHebrew("פריט"),
-      ),
+        reverseHebrew("פריט")
+      )
     );
   let total = 0;
 
@@ -165,8 +165,8 @@ async function styleRequestBill(order) {
       alignLeftRightCenter(
         reverseHebrew('ש"ח') + " " + String(item.price * item.amount),
         String(item.amount),
-        reverseHebrew(item.name),
-      ),
+        reverseHebrew(item.name)
+      )
     );
 
     if (item.extra) {
@@ -183,8 +183,8 @@ async function styleRequestBill(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`,
-            ),
+                }`
+            )
           );
         }
 
@@ -196,8 +196,8 @@ async function styleRequestBill(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
-            ),
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
+            )
           );
 
           for (const num of item.extra[key]) {
@@ -206,12 +206,12 @@ async function styleRequestBill(order) {
                 " ".repeat(centerRightGap + 3) +
                   infoItem.extra[key].items[num]?.name +
                   " ".repeat(
-                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length,
+                    42 - 6 - [...infoItem.extra[key].items[num]?.name].length
                   ) +
                   infoItem.extra[key].items[num]?.price +
                   " " +
-                  'ש"ח',
-              ),
+                  'ש"ח'
+              )
             );
           }
         }
@@ -226,7 +226,7 @@ async function styleRequestBill(order) {
   let template = `סך הכל (כולל אחוז%): `;
   const allInAll = template.replace(
     "אחוז",
-    Math.floor((order.percent - 1) * 100),
+    Math.floor((order.percent - 1) * 100)
   );
 
   buffer = buffer
@@ -240,13 +240,13 @@ async function styleRequestBill(order) {
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent - total)) +
-        reverseHebrew("שירות " + ")רשות(: "),
+        reverseHebrew("שירות " + ")רשות(: ")
     )
     .bold(true)
     .line(
       reverseHebrew(' ש"ח') +
         String(Math.ceil(total * order.percent)) +
-        reverseHebrew(allInAll),
+        reverseHebrew(allInAll)
     )
     .bold(false)
     .newline()
@@ -287,7 +287,7 @@ async function styleRequestBon(order) {
 
   for (const item of order.items.order) {
     buffer = buffer.line(
-      alignLeftRightCenter("", String(item.amount), reverseHebrew(item.name)),
+      alignLeftRightCenter("", String(item.amount), reverseHebrew(item.name))
     );
 
     if (item.extra) {
@@ -304,8 +304,8 @@ async function styleRequestBon(order) {
               " ".repeat(centerRightGap + 2) +
                 `${translation[key]}: ${
                   infoItem.extra[key].items[item.extra[key]]?.name ?? ""
-                }`,
-            ),
+                }`
+            )
           );
         }
 
@@ -317,16 +317,16 @@ async function styleRequestBon(order) {
           console.log(infoItem);
           buffer = buffer.line(
             reverseHebrew(
-              " ".repeat(centerRightGap + 2) + `${translation[key]}:`,
-            ),
+              " ".repeat(centerRightGap + 2) + `${translation[key]}:`
+            )
           );
 
           for (const num of item.extra[key]) {
             buffer = buffer.line(
               reverseHebrew(
                 " ".repeat(centerRightGap + 3) +
-                  infoItem.extra[key].items[num]?.name,
-              ),
+                  infoItem.extra[key].items[num]?.name
+              )
             );
           }
         }
@@ -384,4 +384,12 @@ async function print(order, autoClose = true) {
   }
 }
 
-module.exports = { print, reverseHebrew, alignLeftRightCenter };
+async function printQR() {
+  const conn = await connectPrinter("192.168.10.59");
+
+  let buffer = encoder.align("center").qrcode(qrCode, 2, 4, "h").encode();
+
+  await conn.write(buffer);
+}
+
+module.exports = { print, reverseHebrew, alignLeftRightCenter, printQR };
