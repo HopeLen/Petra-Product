@@ -7,7 +7,7 @@ async function getOrderID(tableID) {
 
 async function postOrderToInfo(orderID, order) {
   console.log(order);
-  const sending = await fetch(`/api/post-order-to-info/${orderID}`, {
+  const sending = await fetch(`/api/post-order-to-info/${tableID}/${orderID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -33,7 +33,48 @@ async function postOrderToInfo(orderID, order) {
   return sending;
 }
 
+async function orderStatusChange(orderID, targetStatus) {
+  try {
+    await fetch("/api/set-order-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderID,
+        targetStatus,
+      }),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function adminCheck() {
+  const waiterID = prompt("הכנס קוד:");
+  const adminResponse = await fetch(
+    `/api/get-admin-privileges/${waiterID}`
+  ).then((res) => res.json());
+  const admin = adminResponse[0].admin;
+
+  console.log(admin);
+  return admin;
+}
+
 async function closeOrder(tableID) {
+  const admin = await adminCheck();
+  const status = await getTableStatus(tableID);
+  console.log(status);
+
+  if (status !== "BILLED") {
+    alert("השולחן לא בחשבון!");
+    return;
+  }
+
+  if (!admin) {
+    alert("אין לך זכויות!");
+    return;
+  }
+
   console.log("Closing the order at: ", tableID);
 
   const orderID = await getOrderID(tableID);
@@ -43,4 +84,6 @@ async function closeOrder(tableID) {
   console.log(order);
 
   await postOrderToInfo(orderID, order);
+  await tableStatusChange(tableID, "OPEN");
+  await orderStatusChange(orderID, "AWAITING");
 }

@@ -123,5 +123,8 @@ async function renderBillPopup(
 
     sendPrintRequest(options);
     closeBillPopup();
+    tableStatusChange(tableID, "BILLED");
+
+    orderStatusChange(await getOrderID(tableID), "BILLED");
   };
 }

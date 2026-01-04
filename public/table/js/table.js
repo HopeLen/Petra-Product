@@ -389,6 +389,7 @@ async function getTableStatus(tableID) {
     res.json()
   );
   console.log(status);
+  return status;
 }
 
 async function tableStatusChange(tableID, targetStatus) {
