@@ -423,7 +423,7 @@ async function printImage(img, width, height, address, autoClose = true) {
 async function printQR() {
   let buffer = encoder
     .align("center")
-    .line(qrCode, 2, 4, "h")
+    .qrcode(qrCode, 2, 4, "h")
     .newline()
     .newline()
     .encode();

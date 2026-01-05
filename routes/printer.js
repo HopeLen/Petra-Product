@@ -22,7 +22,7 @@ router.get("/get-items-printers/:id", async (req, res) => {
 
   const [printers] = await pool.query(
     "SELECT printers FROM menu WHERE id=?",
-    id
+    id,
   );
   console.log(printers);
   res.json(printers);
@@ -31,19 +31,11 @@ router.get("/get-items-printers/:id", async (req, res) => {
 router.post("/post-print-request", async (req, res) => {
   const request = req.body;
 
-  if ((request.type === "bill")) {
+  if (request.type === "bill") {
     await printBill(request);
   } else {
     printBon(request);
   }
-
-  res.json({ ok: true });
-});
-
-router.get("/send-qr-print", async (req, res) => {
-  console.log("arrived");
-
-  await printQR();
 
   res.json({ ok: true });
 });
