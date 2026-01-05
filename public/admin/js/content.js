@@ -1,22 +1,24 @@
+import scripts from "./scripts.js";
+
 async function checkContent(id) {
   switch (id) {
     case "Z סגירת":
-      displayZClose();
+      scripts.display.displayZClose(id);
       break;
     case "שולחנות":
-      displayTables();
+      scripts.display.displayTables(id);
       break;
     case "תפריט":
-      displayMenu();
+      scripts.display.displayMenu(id);
       break;
     case "מלצרים":
-      displayWaiters();
+      scripts.display.displayWaiters(id);
       break;
     case "מדפסות":
-      displayPrinters();
+      scripts.display.displayPrinters(id);
       break;
     case "מידע":
-      displayInfo();
+      scripts.display.displayInfo(id);
   }
 }
 

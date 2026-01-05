@@ -11,4 +11,8 @@ async function getLogo() {
   return await fetch(`api/get-logo`);
 }
 
-export default { userAdmin, getLogo };
+async function getAwaitingTables() {
+  return await fetch(`/api/get-awaiting-tables`).then((res) => res.json());
+}
+
+export default { userAdmin, getLogo, getAwaitingTables };

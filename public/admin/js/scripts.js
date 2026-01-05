@@ -8,4 +8,6 @@ import navbar from "./navbar.js";
 
 import content from "./content.js";
 
-export default { routes, onload, delay, navbar, content };
+import display from "./display.js";
+
+export default { routes, onload, delay, navbar, content, display };

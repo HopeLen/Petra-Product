@@ -124,4 +124,13 @@ router.post("/set-order-status", express.json(), async (req, res) => {
   }
 });
 
+router.get("/get-awaiting-tables", express.json(), async (req, res) => {
+  const rows = await pool.query(
+    "SELECT * FROM `orders` WHERE `status` = 'AWAITING' "
+  );
+
+  console.log(rows);
+  res.json(rows);
+});
+
 module.exports = router;

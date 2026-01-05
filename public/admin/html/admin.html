@@ -7,6 +7,8 @@
 
     <link rel="stylesheet" href="../css/root.css" />
     <link rel="stylesheet" href="../css/sidebar.css" />
+    <link rel="stylesheet" href="../css/content.css" />
+    <link rel="stylesheet" href="../css/ZClosing.css" />
 
     <!-- ==== BOX ICONS CSS ====-->
     <link
@@ -15,74 +17,76 @@
     />
   </head>
   <body>
-    <nav class="sidebar">
-      <header>
-        <div class="image-text">
-          <span class="image">
-            <img src="../../assets/images/logo.jpg" alt="" id="logo" />
-          </span>
+    <div>
+      <nav class="sidebar">
+        <header>
+          <div class="image-text">
+            <span class="image">
+              <img src="../../assets/images/logo.jpg" alt="" id="logo" />
+            </span>
 
-          <div class="text header-text">
-            <span class="name"></span>
+            <div class="text header-text">
+              <span class="name"></span>
+            </div>
+          </div>
+
+          <i class="bx bx-chevron-right toggle"></i>
+        </header>
+        <div class="menu-bar">
+          <div class="menu">
+            <ul class="menu-links" id="menu-links">
+              <li class="nav-link" id="Z סגירת">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-currency-notes icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+
+              <li class="nav-link" id="שולחנות">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-outdoor-dining icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+
+              <li class="nav-link" id="תפריט">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-food-menu icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+
+              <li class="nav-link" id="מלצרים">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-user-circle icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+
+              <li class="nav-link" id="מדפסות">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-printer icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+
+              <li class="nav-link" id="מידע">
+                <label>
+                  <input type="radio" name="nav" hidden />
+                  <i class="bx bx-file-detail icon"></i>
+                  <span class="text nav-text"></span>
+                </label>
+              </li>
+            </ul>
           </div>
         </div>
-
-        <i class="bx bx-chevron-right toggle"></i>
-      </header>
-      <div class="menu-bar">
-        <div class="menu">
-          <ul class="menu-links" id="menu-links">
-            <li class="nav-link" id="Z סגירת">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-currency-notes icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-
-            <li class="nav-link" id="שולחנות">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-outdoor-dining icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-
-            <li class="nav-link" id="תפריט">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-food-menu icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-
-            <li class="nav-link" id="מלצרים">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-user-circle icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-
-            <li class="nav-link" id="מדפסות">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-printer icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-
-            <li class="nav-link" id="מידע">
-              <label>
-                <input type="radio" name="nav" hidden />
-                <i class="bx bx-file-detail icon"></i>
-                <span class="text nav-text"></span>
-              </label>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+      </nav>
+    </div>
 
     <div class="content" id="content"></div>
 
