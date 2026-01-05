@@ -449,4 +449,10 @@ async function printQR() {
   });
 }
 
-module.exports = { print, reverseHebrew, alignLeftRightCenter, printQR };
+module.exports = {
+  print,
+  reverseHebrew,
+  alignLeftRightCenter,
+  printQR,
+  printImage,
+};
