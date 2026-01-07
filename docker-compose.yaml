@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: petra
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mariadb
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: petra_test
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306" # optional (for host access)
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: petra_test
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - mariadb_volume:/var/lib/mysql
+
+volumes:
+  mariadb_volume:
