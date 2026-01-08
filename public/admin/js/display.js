@@ -51,6 +51,10 @@ async function displayZClose(id) {
     cardElement.appendChild(cardTable);
     cardElement.appendChild(cardBody);
 
+    cardElement.onclick = () => {
+      scripts.ZClosePopUp.ZClosePopUp(card);
+    };
+
     userCards.appendChild(cardElement);
   });
 

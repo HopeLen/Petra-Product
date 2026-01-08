@@ -10,4 +10,6 @@ import content from "./content.js";
 
 import display from "./display.js";
 
-export default { routes, onload, delay, navbar, content, display };
+import ZClosePopUp from "./ZClosePopUp.js";
+
+export default { routes, onload, delay, navbar, content, display, ZClosePopUp };
