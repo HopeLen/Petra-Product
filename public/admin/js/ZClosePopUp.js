@@ -8,13 +8,25 @@ function createPopup() {
     popupNode.classList.add("active");
   }
 
-  function closePopup() {
-    popupNode.classList.remove("active");
-  }
-
   overlay.addEventListener("click", closePopup);
 
   openPopup();
+}
+
+function closePopup() {
+  let popupNode = document.getElementById("popup");
+  popupNode.classList.remove("active");
+  document.getElementById("info").innerHTML = "";
+}
+
+function checkInput() {
+  const cash = document.getElementById("מזומן");
+  const card = document.getElementById("אשראי");
+
+  if (cash.value || card.value) {
+    return true;
+  }
+  return false;
 }
 
 function renderOrderList(ul, list, mutability = true) {
@@ -33,9 +45,28 @@ function renderOrderList(ul, list, mutability = true) {
 function getOrderTotal(order) {
   let total = 0;
   order.forEach((item) => {
-    total += item.price;
+    total += item.price * item.amount;
   });
   return total;
+}
+
+function createInput(id) {
+  const input = document.createElement("input");
+  let placeholder;
+
+  if (id === "cash") {
+    placeholder = "מזומן";
+  } else {
+    placeholder = "אשראי";
+  }
+
+  input.placeholder = placeholder;
+
+  input.type = "number";
+  input.inputmode = "numeric";
+  input.id = placeholder;
+
+  return input;
 }
 
 function fixPopup(card) {
@@ -56,12 +87,52 @@ function fixPopup(card) {
   //Payment
   const payBox = document.createElement("div");
   payBox.id = "pay-box";
+  payBox.classList.add("pay-box");
 
   const totalPrice = document.createElement("h3");
-  totalPrice.textContent = "לתשלום: " + getOrderTotal(card.order);
+  totalPrice.textContent =
+    "לתשלום: " +
+    Math.round(getOrderTotal(card.order) * card.information.percent) +
+    "₪";
   payBox.appendChild(totalPrice);
 
+  const tip = document.createElement("h4");
+  tip.textContent =
+    "טיפ: " +
+    String(
+      Math.round(
+        getOrderTotal(card.order) * card.information.percent -
+          getOrderTotal(card.order)
+      )
+    ) +
+    "₪";
+  payBox.appendChild(tip);
+
+  payBox.appendChild(createInput("cash"));
+  payBox.appendChild(createInput("card"));
+
   content.appendChild(payBox);
+  //-----------------------------------------------
+  let sendButton = document.getElementById("send");
+
+  sendButton.onclick = () => {
+    const cashPay = document.getElementById("מזומן");
+    const cardPay = document.getElementById("אשראי");
+
+    if (checkInput()) {
+      scripts.routes.sendPaymentInformation(
+        card.orderID,
+        cashPay.value,
+        cardPay.value
+      );
+      scripts.routes.setOrderStatus(card.orderID, "FINISHED");
+      scripts.display.displayZClose("Z סגירת");
+      closePopup();
+    } else {
+      prompt("לא רשמת כלום...");
+      return;
+    }
+  };
 }
 
 async function ZClosePopUp(card) {

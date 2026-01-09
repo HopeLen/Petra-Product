@@ -25,7 +25,7 @@
   transform: translate(-50%, -50%) scale(1.1);
   opacity: 0;
   width: 95%;
-  max-width: 500px;
+  max-width: fit-content;
   background: #fff;
   padding: 25px;
   border-radius: var(--border-rad);
@@ -76,7 +76,6 @@
 
 .info {
   display: flex;
-  
 }
 
 /* Order ul element */
@@ -92,6 +91,8 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
+  border: 2px solid black;
+  padding: 5px;
 }
 
 .order li {
@@ -105,4 +106,23 @@
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 2px solid black;
+}
+
+.pay-box {
+  border: 2px solid black;
+  min-width: fit-content;
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  padding: 10px;
+  align-items: flex-end;
+}
+
+.pay-box input {
+  margin-top: 10px;
+  border: none;
+}
+
+.pay-box input::placeholder {
+  text-align: right;
 }

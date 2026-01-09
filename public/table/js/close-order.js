@@ -33,7 +33,7 @@ async function postOrderToInfo(orderID, order) {
   return sending;
 }
 
-async function orderStatusChange(orderID, targetStatus) {
+async function orderStatusChange(orderID, targetStatus, percent) {
   try {
     await fetch("/api/set-order-status", {
       method: "POST",
@@ -41,6 +41,7 @@ async function orderStatusChange(orderID, targetStatus) {
       body: JSON.stringify({
         orderID,
         targetStatus,
+        percent,
       }),
     });
   } catch (err) {

@@ -15,4 +15,37 @@ async function getAwaitingTables() {
   return await fetch(`/api/get-awaiting-tables`).then((res) => res.json());
 }
 
-export default { userAdmin, getLogo, getAwaitingTables };
+async function sendPaymentInformation(orderID, cash, card) {
+  console.log(orderID, cash, card);
+  await fetch(`/api/post-payment-info/${orderID}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cash: cash, card: card }),
+  });
+}
+
+async function setOrderStatus(orderID, targetStatus) {
+  try {
+    await fetch("/api/set-order-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderID,
+        targetStatus,
+      }),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export default {
+  userAdmin,
+  getLogo,
+  getAwaitingTables,
+  sendPaymentInformation,
+  setOrderStatus,
+};

@@ -9,7 +9,7 @@ router.post("/post-table-info", express.json(), async (req, res) => {
     const result = await pool.query(
       `INSERT INTO orders (information)
    VALUES (?)`,
-      [JSON.stringify(data)],
+      [JSON.stringify(data)]
     );
 
     pool.query("UPDATE `tables` SET `information` = ? WHERE id = ?", [
@@ -69,21 +69,22 @@ router.post(
 
     await pool.query(
       "UPDATE `tables` SET `order` = '[]' WHERE `id` = ?",
-      tableID,
+      tableID
     );
 
     await pool.query(
       "UPDATE `tables` SET `information` = NULL WHERE `id` = ?",
-      tableID,
+      tableID
     );
 
     res.json({ ok: true });
-  },
+  }
 );
 
 router.post("/set-order-status", express.json(), async (req, res) => {
   let conn;
-  const { orderID, targetStatus } = req.body;
+  const { orderID, targetStatus, percent } = req.body;
+  console.log(percent);
   if (!orderID || !targetStatus) {
     return res.status(400).json({ error: "Missing orderID or targetStatus" });
   }
@@ -91,8 +92,20 @@ router.post("/set-order-status", express.json(), async (req, res) => {
     conn = await pool.getConnection();
     const result = await conn.query(
       "UPDATE `orders` SET status = ? WHERE orderID = ?",
-      [targetStatus, orderID],
+      [targetStatus, orderID]
     );
+
+    if (targetStatus === "BILLED") {
+      let row = await pool
+        .query("SELECT `information` FROM `orders` WHERE orderID = ?", orderID)
+        .then((res) => res[0])
+        .then((res) => res.information);
+      row.percent = percent;
+      await pool.query(
+        "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
+        [row, orderID]
+      );
+    }
 
     if (targetStatus === "AWAITING") {
       let row = await pool
@@ -111,7 +124,7 @@ router.post("/set-order-status", express.json(), async (req, res) => {
 
       await pool.query(
         "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
-        [row, orderID],
+        [row, orderID]
       );
     }
 
@@ -126,11 +139,31 @@ router.post("/set-order-status", express.json(), async (req, res) => {
 
 router.get("/get-awaiting-tables", express.json(), async (req, res) => {
   const rows = await pool.query(
-    "SELECT * FROM `orders` WHERE `status` = 'AWAITING' ",
+    "SELECT * FROM `orders` WHERE `status` = 'AWAITING' "
   );
 
   console.log(rows);
   res.json(rows);
+});
+
+router.post("/post-payment-info/:orderID", express.json(), async (req, res) => {
+  const orderID = req.params.orderID;
+  const { cash, card } = req.body;
+
+  console.log(cash, card);
+  let row = await pool
+    .query("SELECT `information` FROM `orders` WHERE orderID = ?", orderID)
+    .then((res) => res[0])
+    .then((res) => res.information);
+
+  row.cardPayment = Number(card);
+  row.cashPayment = Number(cash);
+  console.log(row);
+
+  await pool.query("UPDATE `orders` SET `information` = ? WHERE orderID = ?", [
+    row,
+    orderID,
+  ]);
 });
 
 module.exports = router;

@@ -125,6 +125,6 @@ async function renderBillPopup(
     closeBillPopup();
     tableStatusChange(tableID, "BILLED");
 
-    orderStatusChange(await getOrderID(tableID), "BILLED");
+    orderStatusChange(await getOrderID(tableID), "BILLED", percent);
   };
 }
