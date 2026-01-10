@@ -7,10 +7,8 @@
   display: flex;
   justify-self: center;
   align-self: center;
-  border: 2px solid black;
-  min-width: 1000px;
-  min-height: 900px;
-  margin-top: 100px;
+  min-width: 90vw;
+  min-height: 90vh;
   align-items: center;
   flex-direction: column;
 }
