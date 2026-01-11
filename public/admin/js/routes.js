@@ -15,14 +15,14 @@ async function getAwaitingTables() {
   return await fetch(`/api/get-awaiting-tables`).then((res) => res.json());
 }
 
-async function sendPaymentInformation(orderID, cash, card) {
+async function sendPaymentInformation(orderID, cash, card, total) {
   console.log(orderID, cash, card);
   await fetch(`/api/post-payment-info/${orderID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ cash: cash, card: card }),
+    body: JSON.stringify({ cash: cash, card: card, total: total }),
   });
 }
 

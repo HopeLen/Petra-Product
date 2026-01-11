@@ -148,7 +148,7 @@ router.get("/get-awaiting-tables", express.json(), async (req, res) => {
 
 router.post("/post-payment-info/:orderID", express.json(), async (req, res) => {
   const orderID = req.params.orderID;
-  const { cash, card } = req.body;
+  const { cash, card, total } = req.body;
 
   console.log(cash, card);
   let row = await pool
@@ -158,6 +158,7 @@ router.post("/post-payment-info/:orderID", express.json(), async (req, res) => {
 
   row.cardPayment = Number(card);
   row.cashPayment = Number(cash);
+  row.total = Number(total);
   console.log(row);
 
   await pool.query("UPDATE `orders` SET `information` = ? WHERE orderID = ?", [

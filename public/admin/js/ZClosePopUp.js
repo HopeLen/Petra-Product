@@ -123,7 +123,8 @@ function fixPopup(card) {
       scripts.routes.sendPaymentInformation(
         card.orderID,
         cashPay.value,
-        cardPay.value
+        cardPay.value,
+        getOrderTotal(card.order)
       );
       scripts.routes.setOrderStatus(card.orderID, "FINISHED");
       scripts.display.displayZClose("Z סגירת");
