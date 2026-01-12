@@ -12,4 +12,15 @@ import display from "./display.js";
 
 import ZClosePopUp from "./ZClosePopUp.js";
 
-export default { routes, onload, delay, navbar, content, display, ZClosePopUp };
+import helpers from "./helpers.js";
+
+export default {
+  routes,
+  onload,
+  delay,
+  navbar,
+  content,
+  display,
+  ZClosePopUp,
+  helpers,
+};

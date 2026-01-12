@@ -45,7 +45,12 @@ async function displayZClose(id) {
 
     cardHeader.textContent = "מספר הזמנה: " + card.orderID;
     cardTable.textContent = "מספר שולחן: " + card.information.table;
-    cardBody.textContent = "שעת סגירה: " + card.information.closeTime;
+    cardBody.textContent =
+      "סכום: " +
+      Math.round(
+        scripts.helpers.getOrderTotal(card.order) * card.information.percent
+      ) +
+      ".00₪";
 
     cardElement.appendChild(cardHeader);
     cardElement.appendChild(cardTable);

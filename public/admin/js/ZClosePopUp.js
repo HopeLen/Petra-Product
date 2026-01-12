@@ -42,14 +42,6 @@ function renderOrderList(ul, list, mutability = true) {
   });
 }
 
-function getOrderTotal(order) {
-  let total = 0;
-  order.forEach((item) => {
-    total += item.price * item.amount;
-  });
-  return total;
-}
-
 function createInput(id) {
   const input = document.createElement("input");
   let placeholder;
@@ -92,7 +84,9 @@ function fixPopup(card) {
   const totalPrice = document.createElement("h3");
   totalPrice.textContent =
     "לתשלום: " +
-    Math.round(getOrderTotal(card.order) * card.information.percent) +
+    Math.round(
+      scripts.helpers.getOrderTotal(card.order) * card.information.percent
+    ) +
     "₪";
   payBox.appendChild(totalPrice);
 
@@ -101,8 +95,8 @@ function fixPopup(card) {
     "טיפ: " +
     String(
       Math.round(
-        getOrderTotal(card.order) * card.information.percent -
-          getOrderTotal(card.order)
+        scripts.helpers.getOrderTotal(card.order) * card.information.percent -
+          scripts.helpers.getOrderTotal(card.order)
       )
     ) +
     "₪";
