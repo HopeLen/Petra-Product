@@ -1,7 +1,7 @@
 .content {
   border: 5px solid black;
-  min-width: 60%;
-  min-height: 70%;
+  width: 60%;
+  height: 70%;
 
   margin: 0 auto;
 

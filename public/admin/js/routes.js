@@ -42,10 +42,33 @@ async function setOrderStatus(orderID, targetStatus) {
   }
 }
 
+async function getTablesFromSection() {
+  return await fetch(`/api/get-tables-from-section/${sectionId}`).then((res) =>
+    res.json()
+  );
+}
+
+async function getTableSections() {
+  return await fetch("/api/get-table-sections").then((res) => res.json());
+}
+async function getTableSectionsMap() {
+  return await fetch("/api/get-table-section-map").then((res) => res.json());
+}
+
+async function fetchTables(id) {
+  return await fetch(`/api/get-tables-from-section/${id}`).then((res) =>
+    res.json()
+  );
+}
+
 export default {
   userAdmin,
   getLogo,
   getAwaitingTables,
   sendPaymentInformation,
   setOrderStatus,
+  getTablesFromSection,
+  getTableSections,
+  getTableSectionsMap,
+  fetchTables,
 };

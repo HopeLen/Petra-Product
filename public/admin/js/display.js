@@ -83,7 +83,25 @@ async function displayZClose(id) {
 async function displayTables(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
-  title(id, container);
+
+  container.innerHTML += `
+    <div class="parent">
+      <div class="main-box">
+        <h1 class="title">שולחנות</h1>
+        <div id="grid"></div>
+      </div>
+      <div class="section-container">
+        <h1 class="title">אזורים</h1>
+        <div id="section-container"></div>
+      </div>
+    </div>
+    `;
+
+  scripts.helpers.createSections(
+    await scripts.routes.getTableSections(),
+    await scripts.routes.getTableSectionsMap(),
+    document.getElementById("section-container")
+  );
 }
 async function displayMenu(id) {
   const container = document.getElementById("content");
