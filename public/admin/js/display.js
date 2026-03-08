@@ -48,7 +48,7 @@ async function displayZClose(id) {
     cardBody.textContent =
       "סכום: " +
       Math.round(
-        scripts.helpers.getOrderTotal(card.order) * card.information.percent
+        scripts.helpers.getOrderTotal(card.order) * card.information.percent,
       ) +
       ".00₪";
 
@@ -83,26 +83,30 @@ async function displayZClose(id) {
 async function displayTables(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
+  title(id, container);
 
-  container.innerHTML += `
-    <div class="parent">
-      <div class="main-box">
-        <h1 class="title">שולחנות</h1>
-        <div id="grid"></div>
-      </div>
-      <div class="section-container">
-        <h1 class="title">אזורים</h1>
-        <div id="section-container"></div>
-      </div>
-    </div>
-    `;
+  const table_content = document.createElement("div");
+  table_content.classList.add("table-content");
 
-  scripts.helpers.createSections(
-    await scripts.routes.getTableSections(),
-    await scripts.routes.getTableSectionsMap(),
-    document.getElementById("section-container")
-  );
+  const tables = document.createElement("div");
+  tables.classList.add("main-tables");
+  tables.id = "tables";
+
+  table_content.appendChild(tables);
+
+  const sections = document.createElement("div");
+  sections.classList.add("section-list");
+
+  const sectionTitle = document.createElement("div");
+  sectionTitle.textContent = "אזורים";
+  sections.appendChild(sectionTitle);
+  scripts.helpers.createSections(sections, tables);
+
+  table_content.appendChild(sections);
+
+  container.appendChild(table_content);
 }
+
 async function displayMenu(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";

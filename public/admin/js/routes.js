@@ -42,9 +42,9 @@ async function setOrderStatus(orderID, targetStatus) {
   }
 }
 
-async function getTablesFromSection() {
+async function getTablesFromSection(sectionId) {
   return await fetch(`/api/get-tables-from-section/${sectionId}`).then((res) =>
-    res.json()
+    res.json(),
   );
 }
 
@@ -57,8 +57,62 @@ async function getTableSectionsMap() {
 
 async function fetchTables(id) {
   return await fetch(`/api/get-tables-from-section/${id}`).then((res) =>
-    res.json()
+    res.json(),
   );
+}
+
+async function updateTableShape(tableID, shape) {
+  return await fetch(`/api/table-shape/${tableID}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      shape: shape,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+    .catch((err) => console.error(err));
+}
+
+async function deleteTable(id) {
+  fetch(`/api/delete-table/${id}`, {
+    method: "DELETE",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("User deleted:", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
+async function addTable(table) {
+  try {
+    const response = await fetch("/api/add-table", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(table),
+    });
+
+    if (!response.ok) {
+      console.log("Something went WRONG");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Create table failed:", error);
+  }
 }
 
 export default {
@@ -71,4 +125,7 @@ export default {
   getTableSections,
   getTableSectionsMap,
   fetchTables,
+  updateTableShape,
+  deleteTable,
+  addTable,
 };

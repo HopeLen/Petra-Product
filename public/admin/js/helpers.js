@@ -1,3 +1,4 @@
+import routes from "./routes.js";
 import scripts from "./scripts.js";
 
 function getOrderTotal(order) {
@@ -8,44 +9,29 @@ function getOrderTotal(order) {
   return total;
 }
 
-function createSections(data, map, container) {
-  container.innerHTML = "";
-  data.sectionIds.forEach((id) => {
-    const box = document.createElement("div");
-    box.classList.add("table-card");
-    box.classList.add("section-box");
+async function createSections(container, grid) {
+  const sections = await scripts.routes.getTableSectionsMap();
+  console.log(sections);
+  sections.forEach((item) => {
+    const section = document.createElement("div");
+    section.classList.add("section");
+    section.textContent = item.name;
+    console.log(section);
 
-    box.textContent = map[id];
-
-    box.onclick = async () => {
-      const tables = await scripts.routes.fetchTables(id);
-      scripts.helpers.showTables(tables);
+    section.onclick = () => {
+      console.log(item.id, grid);
+      renderGrid(item.id, grid);
     };
 
-    container.appendChild(box);
+    container.appendChild(section);
   });
 }
 
-function createGrid(cols, rows) {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = ""; // clear previous cells
-  grid.style.setProperty("--cols", cols);
-  grid.style.setProperty("--rows", rows);
-
-  for (let y = rows; y >= 1; y--) {
-    for (let x = 1; x <= cols; x++) {
-      const cell = document.createElement("div");
-      cell.classList.add("table-card");
-      cell.id = `${x}-${y}`;
-      grid.appendChild(cell);
-    }
-  }
-}
-
-function showTables(data) {
-  console.log(data);
-  const grid = document.getElementById("grid");
+async function renderGrid(section_id, grid) {
   grid.innerHTML = "";
+
+  const data = await scripts.routes.getTablesFromSection(section_id);
+  console.log(data);
 
   let maxCol = 5;
   let maxRow = 5;
@@ -60,63 +46,242 @@ function showTables(data) {
     }
   });
 
-  console.log(maxCol, maxRow);
-  createGrid(maxCol, maxRow);
+  console.log(grid, maxCol, maxRow, section_id);
+  createGrid(grid, maxCol, maxRow, section_id);
 
   data.forEach((row) => {
     const container = document.getElementById(row.location);
 
     container.textContent = "";
     container.className = "";
-    container.classList.add("table-card");
+    container.classList.add("card");
 
     if (row.shape == "C") {
-      container.style.borderRadius = "50%";
-      container.style.width = container.offsetHeight + "px";
-      container.style.marginLeft = "auto";
-      container.style.marginRight = "auto";
+      renderCircle(container);
     }
 
     container.dataset.tableId = row.id;
-
-    container.onclick = function () {
-      //if (row.status !== "LOCKED") {
-      console.log("Opening the table: " + row.id);
-
-      const waiterId = prompt("הכנס קוד:");
-
-      if (waiterId === null || waiterId.trim() === "") {
-        // User cancelled or entered nothing
-        return;
-      }
-
-      window.location.href = `/table/table.html?tableId=${row.id}&waiterId=${waiterId}`;
-      //} else {
-      //alert("מישהו כבר נמצא בשולחן... נסו שנית אחר כך");
-      //}
-    };
-    console.log(row.status);
-
-    switch (row.status) {
-      case "OPEN":
-        container.classList.add("status-open");
-        break;
-      case "TAKEN":
-        container.classList.add("status-taken");
-        break;
-      case "BILLED":
-        container.classList.add("status-billed");
-        break;
-      case "LOCKED":
-        container.classList.add("status-locked");
-        break;
-      default:
-        container.style.backgroundColor = "lightblue";
-    }
-
-    // Display row ID inside container
     container.textContent = row.id;
+    container.onclick = () => {
+      scripts.ZClosePopUp.createPopup();
+      tablesCheckPopup(row);
+    };
   });
 }
 
-export default { getOrderTotal, createSections, showTables };
+function renderCircle(container) {
+  container.style.borderRadius = "50%";
+  container.style.width = container.offsetHeight + "px";
+  container.style.marginLeft = "auto";
+  container.style.marginRight = "auto";
+}
+
+function tablesCheckPopup(row = null, location) {
+  console.log(row);
+
+  if (row) {
+    tablesPopupChange(row);
+  } else {
+    tablesPopupCreate(location);
+  }
+}
+
+function tablesPopupChange(row) {
+  const title = document.getElementById("title");
+  const info = document.getElementById("info");
+  const controls = document.getElementById("controls");
+  title.innerHTML = "";
+  info.innerHTML = "";
+
+  title.textContent = "שולחן: " + row.id;
+
+  createRadioGroup({
+    groupName: "shape",
+    option1: { label: "מרובע", value: "S" },
+    option2: { label: "עיגול", value: "C" },
+    container: info,
+  });
+
+  const delete_button = createDeleteButton();
+  delete_button.onclick = () => {
+    if (row.status !== "OPEN") {
+      alert("השולחן טפוס!");
+      return;
+    }
+
+    scripts.routes.deleteTable(row.id);
+    scripts.ZClosePopUp.closePopup();
+    renderGrid(row.section_id, document.getElementById("tables"));
+  };
+  controls.appendChild(delete_button);
+
+  document.getElementById("send").textContent = "שמור שינויים";
+  document.getElementById("send").onclick = () => {
+    const value = getSelectedValue("shape");
+    if (!value) {
+      alert("לא בחרת כלום...");
+      return;
+    }
+
+    console.log(value);
+
+    scripts.routes.updateTableShape(row.id, value);
+    scripts.ZClosePopUp.closePopup();
+
+    const cell = document.getElementById(row.location);
+
+    if (value === "C") {
+      renderCircle(cell);
+    } else {
+      cell.style.cssText = "";
+    }
+  };
+}
+
+function tablesPopupCreate(location) {
+  const title = document.getElementById("title");
+  const info = document.getElementById("info");
+  title.innerHTML = "";
+  info.innerHTML = "";
+
+  title.textContent = "יצירת שולחן חדש";
+
+  createIdInput({
+    placeholder: " הכנס ערך",
+    className: "id-input-container",
+    id: "id-input",
+    container: info,
+  });
+
+  createRadioGroup({
+    groupName: "shape",
+    option1: { label: "מרובע", value: "S" },
+    option2: { label: "עיגול", value: "C" },
+    container: info,
+  });
+
+  console.log(location);
+
+  document.getElementById("send").textContent = "שמור שינויים";
+  document.getElementById("send").onclick = async () => {
+    const shape = getSelectedValue("shape");
+    if (!shape) {
+      alert("לא בחרת כלום...");
+      return;
+    }
+    const id = document.getElementById("id-input").value;
+
+    const section_id = document.getElementById("tables").dataset.section_id;
+    const grid = document.getElementById("tables");
+
+    const new_table = {
+      id: id,
+      section_id: section_id,
+      location: location,
+      shape: shape,
+    };
+
+    scripts.routes.addTable(new_table);
+    renderGrid(section_id, grid);
+    scripts.ZClosePopUp.closePopup();
+  };
+}
+
+function createIdInput({ placeholder, className, id, container }) {
+  const input = document.createElement("input");
+  const wrapper = document.createElement("div");
+
+  if (placeholder) {
+    input.placeholder = placeholder;
+  }
+
+  if (className) {
+    input.className = className;
+  }
+
+  if (id) {
+    input.id = id;
+  }
+
+  wrapper.className = "input-container";
+
+  wrapper.appendChild(input);
+  if (container) {
+    container.appendChild(wrapper);
+  } else {
+    return wrapper;
+  }
+}
+
+function getSelectedValue(groupName) {
+  const selected = document.querySelector(`input[name="${groupName}"]:checked`);
+  return selected ? selected.value : null;
+}
+
+function createDeleteButton() {
+  const button = document.createElement("button");
+  button.classList.add("submit-btn");
+  button.style.backgroundColor = "red";
+  button.textContent = "מחק שולחן";
+  button.id = "rmv-btn";
+  return button;
+}
+
+function createRadioGroup({
+  groupName,
+  option1 = { label: "Option 1", value: "1" },
+  option2 = { label: "Option 2", value: "2" },
+  container = null,
+}) {
+  // Wrapper div
+  const wrapper = document.createElement("div");
+
+  // Helper to create a radio option
+  function createRadio(option) {
+    const label = document.createElement("label");
+    label.style.marginRight = "10px";
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = groupName; // same name = same group
+    input.value = option.value;
+
+    label.appendChild(document.createTextNode(option.label + " "));
+    label.appendChild(input);
+
+    return label;
+  }
+
+  wrapper.appendChild(createRadio(option1));
+  wrapper.appendChild(createRadio(option2));
+
+  if (container) {
+    container.appendChild(wrapper);
+  }
+
+  wrapper.classList.add("input-container");
+  return wrapper;
+}
+
+function createGrid(grid, cols, rows, section_id) {
+  grid.innerHTML = ""; // clear previous cells
+  grid.style.setProperty("--cols", cols);
+  grid.style.setProperty("--rows", rows);
+  grid.dataset.section_id = section_id;
+
+  for (let y = rows; y >= 1; y--) {
+    for (let x = 1; x <= cols; x++) {
+      const cell = document.createElement("div");
+      cell.classList.add("card");
+      cell.id = `${x}-${y}`;
+      cell.dataset.section_id = section_id;
+      cell.onclick = () => {
+        scripts.ZClosePopUp.createPopup();
+        tablesCheckPopup(null, `${x}-${y}`);
+      };
+      grid.appendChild(cell);
+    }
+  }
+}
+
+export default { getOrderTotal, createSections, createGrid, renderGrid };

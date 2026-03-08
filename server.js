@@ -8,7 +8,7 @@ const menuRoutes = require("./routes/menu");
 const tablesRoutes = require("./routes/tables");
 const printer = require("./routes/printer");
 const dataProcessing = require("./routes/dataProcessing");
-const waiterRouts = require("./routes/waiters");
+const waiterRoutes = require("./routes/waiters");
 
 app.use(express.static("public"));
 app.use(express.json());
@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", tablesRoutes);
 app.use("/api", menuRoutes);
 app.use("/api", printer);
-app.use("/api", waiterRouts);
+app.use("/api", waiterRoutes);
 app.use("/api", dataProcessing);
 
 app.listen(PORT, "0.0.0.0", () => {

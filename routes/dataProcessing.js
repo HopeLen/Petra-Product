@@ -9,7 +9,7 @@ router.post("/post-table-info", express.json(), async (req, res) => {
     const result = await pool.query(
       `INSERT INTO orders (information)
    VALUES (?)`,
-      [JSON.stringify(data)]
+      [JSON.stringify(data)],
     );
 
     pool.query("UPDATE `tables` SET `information` = ? WHERE id = ?", [
@@ -69,16 +69,16 @@ router.post(
 
     await pool.query(
       "UPDATE `tables` SET `order` = '[]' WHERE `id` = ?",
-      tableID
+      tableID,
     );
 
     await pool.query(
       "UPDATE `tables` SET `information` = NULL WHERE `id` = ?",
-      tableID
+      tableID,
     );
 
     res.json({ ok: true });
-  }
+  },
 );
 
 router.post("/set-order-status", express.json(), async (req, res) => {
@@ -92,7 +92,7 @@ router.post("/set-order-status", express.json(), async (req, res) => {
     conn = await pool.getConnection();
     const result = await conn.query(
       "UPDATE `orders` SET status = ? WHERE orderID = ?",
-      [targetStatus, orderID]
+      [targetStatus, orderID],
     );
 
     if (targetStatus === "BILLED") {
@@ -103,7 +103,7 @@ router.post("/set-order-status", express.json(), async (req, res) => {
       row.percent = percent;
       await pool.query(
         "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
-        [row, orderID]
+        [row, orderID],
       );
     }
 
@@ -124,7 +124,7 @@ router.post("/set-order-status", express.json(), async (req, res) => {
 
       await pool.query(
         "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
-        [row, orderID]
+        [row, orderID],
       );
     }
 
@@ -139,7 +139,7 @@ router.post("/set-order-status", express.json(), async (req, res) => {
 
 router.get("/get-awaiting-tables", express.json(), async (req, res) => {
   const rows = await pool.query(
-    "SELECT * FROM `orders` WHERE `status` = 'AWAITING' "
+    "SELECT * FROM `orders` WHERE `status` = 'AWAITING' ",
   );
 
   console.log(rows);
@@ -165,6 +165,24 @@ router.post("/post-payment-info/:orderID", express.json(), async (req, res) => {
     row,
     orderID,
   ]);
+});
+
+router.patch("/table-shape/:tableID", express.json(), async (req, res) => {
+  const tableID = req.params.tableID;
+  const shape = req.body;
+
+  console.log(tableID, shape);
+
+  try {
+    pool.query("UPDATE `tables` SET shape=? WHERE id=?", [
+      shape.shape,
+      tableID,
+    ]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

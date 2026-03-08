@@ -86,20 +86,22 @@ async function fetchSections() {
   createSections(
     data,
     customTextMap,
-    document.getElementById("section-container")
+    document.getElementById("section-container"),
   );
 }
 
 function createSections(data, map, container) {
+  console.log(map);
   container.innerHTML = "";
-  data.sectionIds.forEach((id) => {
+  data.sectionIds.forEach((item) => {
+    console.log(map[item].name);
     const box = document.createElement("div");
     box.classList.add("card");
     box.classList.add("section-box");
 
-    box.textContent = map[id];
+    box.textContent = map[item].name;
 
-    box.onclick = () => fetchTables(id);
+    box.onclick = () => fetchTables(item);
 
     container.appendChild(box);
   });

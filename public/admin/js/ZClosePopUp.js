@@ -17,6 +17,12 @@ function closePopup() {
   let popupNode = document.getElementById("popup");
   popupNode.classList.remove("active");
   document.getElementById("info").innerHTML = "";
+  document.getElementById("send").textContent = "שלח";
+  document.getElementById("send").onclick = () => {};
+
+  if (document.getElementById("rmv-btn")) {
+    document.getElementById("rmv-btn").remove();
+  }
 }
 
 function checkInput() {
@@ -85,7 +91,7 @@ function fixPopup(card) {
   totalPrice.textContent =
     "לתשלום: " +
     Math.round(
-      scripts.helpers.getOrderTotal(card.order) * card.information.percent
+      scripts.helpers.getOrderTotal(card.order) * card.information.percent,
     ) +
     "₪";
   payBox.appendChild(totalPrice);
@@ -96,8 +102,8 @@ function fixPopup(card) {
     String(
       Math.round(
         scripts.helpers.getOrderTotal(card.order) * card.information.percent -
-          scripts.helpers.getOrderTotal(card.order)
-      )
+          scripts.helpers.getOrderTotal(card.order),
+      ),
     ) +
     "₪";
   payBox.appendChild(tip);
@@ -118,13 +124,13 @@ function fixPopup(card) {
         card.orderID,
         cashPay.value,
         cardPay.value,
-        getOrderTotal(card.order)
+        getOrderTotal(card.order),
       );
       scripts.routes.setOrderStatus(card.orderID, "FINISHED");
       scripts.display.displayZClose("Z סגירת");
       closePopup();
     } else {
-      prompt("לא רשמת כלום...");
+      alert("לא רשמת כלום...");
       return;
     }
   };
@@ -137,4 +143,4 @@ async function ZClosePopUp(card) {
   fixPopup(card);
 }
 
-export default { ZClosePopUp };
+export default { ZClosePopUp, createPopup, closePopup };

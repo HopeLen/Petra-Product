@@ -10,8 +10,8 @@ router.get("/get-tables-from-section/:sectionId", async (req, res) => {
     conn = await pool.getConnection();
 
     const rows = await conn.query(
-      "SELECT id, location, status, shape FROM `tables` WHERE section_id = ?",
-      [sectionId]
+      "SELECT id, location, status, shape, section_id FROM `tables` WHERE section_id = ?",
+      [sectionId],
     );
 
     res.json(rows);
@@ -34,7 +34,7 @@ router.post("/set-table-status", async (req, res) => {
     conn = await pool.getConnection();
     const result = await conn.query(
       "UPDATE tables SET status = ? WHERE id = ?",
-      [targetStatus, tableID]
+      [targetStatus, tableID],
     );
 
     res.json({ success: true, changedRows: result.affectedRows });
@@ -50,7 +50,7 @@ router.post("/set-table-status", async (req, res) => {
 router.get("/get-table-sections", async (req, res) => {
   try {
     const rows = await pool.query(
-      "SELECT DISTINCT section_id FROM tables ORDER BY section_id ASC"
+      "SELECT DISTINCT section_id FROM tables ORDER BY section_id ASC",
     );
 
     const sectionIds = rows.map((r) => Number(r.section_id));
@@ -70,7 +70,7 @@ router.get("/get-table-order/:tableID", async (req, res) => {
   try {
     const [order] = await pool.query(
       "SELECT `order` FROM tables WHERE id = ?",
-      [tableID]
+      [tableID],
     );
     res.json(order);
   } catch (err) {
@@ -109,7 +109,10 @@ router.post("/post-order/:tableID", express.json(), async (req, res) => {
 });
 
 router.get("/get-table-section-map", async (req, res) => {
-  res.json(require("../assets/maps/table-section-map.json"));
+  const sections = await pool.query("SELECT * FROM sections");
+  console.log(sections);
+
+  res.json(sections);
 });
 
 router.get("/get-bill-options", async (req, res) => {
@@ -128,7 +131,7 @@ router.get("/get-order-id/:tableID", async (req, res) => {
 
   const result = await pool.query(
     "SELECT `information` FROM `tables` WHERE id = ?",
-    tableID
+    tableID,
   );
 
   res.json(result);
@@ -144,5 +147,43 @@ router.get("/get-table-status/:tableID", async (req, res) => {
   console.log(status);
   res.json(status);
 });
+
+router.delete("/delete-table/:tableID", express.json(), async (req, res) => {
+  const tableID = req.params.tableID;
+
+  pool.query("DELETE FROM `tables` WHERE id=?", tableID);
+
+  res.json({ message: "Table deleted successfully" });
+});
+
+router.post("/add-table", express.json(), async (req, res) => {
+  const { id, section_id, location, shape } = req.body;
+
+  console.log(id, section_id, location, shape)
+  
+
+  if (!section_id || !location || !shape) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  const sql = `
+        INSERT INTO tables (id, section_id, location, shape)
+        VALUES (?, ?, ?, ?)
+    `;
+
+  pool.query(sql, [id, section_id, location, shape], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    res.json({
+      success: true,
+      id: result.insertId,
+    });
+  });
+});
+
+
 
 module.exports = router;
