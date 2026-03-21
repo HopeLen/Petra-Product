@@ -115,6 +115,40 @@ async function addTable(table) {
   }
 }
 
+async function getWaiters() {
+  return await fetch(`/api/get-waiters`)
+    .then((res) => res.json())
+    .catch((err) => console.error(err));
+}
+
+async function updateWaiter(waiter) {
+  console.log(waiter);
+  await fetch("/api/patch-waiter", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(waiter),
+  });
+}
+
+async function createWaiter(waiter) {
+  const res = await fetch("/api/post-waiter", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(waiter),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to create waiter");
+  }
+
+  return await res.json();
+}
+
 export default {
   userAdmin,
   getLogo,
@@ -128,4 +162,7 @@ export default {
   updateTableShape,
   deleteTable,
   addTable,
+  getWaiters,
+  updateWaiter,
+  createWaiter,
 };

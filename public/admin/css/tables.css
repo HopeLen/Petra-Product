@@ -1,14 +1,13 @@
-.section-list{
+.section-list {
   display: flex;
   flex-direction: column;
   border: 2px solid black;
   border-radius: 10px;
   padding: 10px;
-  gap:5px;
-  
+  gap: 5px;
 }
 
-.section{
+.section {
   display: flex;
   justify-content: center;
   background-color: lightgray;
@@ -16,7 +15,7 @@
   border-radius: 10px;
 }
 
-.main-tables{
+.main-tables {
   display: grid;
   border-radius: 10px;
   border: 2px solid black;
@@ -30,7 +29,7 @@
 }
 
 .card {
-  background: rgba(39, 151, 249, 0.58);
+  background: rgba(97, 176, 246, 0.58);
   border: 2px solid white;
   box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(6px);
@@ -55,13 +54,12 @@
   transform: scale(0.95) rotateZ(1.7deg);
 }
 
-
-.table-content{
+.table-content {
   display: flex;
-  gap:10px
+  gap: 10px;
 }
 
-.input-container{
+.input-container {
   display: flex;
   flex-direction: column;
   border: 1px solid black;
@@ -71,7 +69,7 @@
   padding: 5px;
 }
 
-.id-input-container{
+.id-input-container {
   border: 10px;
   direction: rtl;
 }

@@ -284,4 +284,157 @@ function createGrid(grid, cols, rows, section_id) {
   }
 }
 
-export default { getOrderTotal, createSections, createGrid, renderGrid };
+async function createWaiterList(list_container, editor_container) {
+  list_container.innerHTML = "";
+
+  scripts.display.title("מלצרים", list_container, "div");
+
+  const waiters = await scripts.routes.getWaiters();
+
+  console.log(waiters);
+
+  const waiterContainer = document.createElement("div");
+  waiterContainer.classList.add("waiter-list");
+  list_container.appendChild(waiterContainer);
+
+  waiters.forEach((item) => {
+    const waiter = document.createElement("div");
+    waiter.classList.add("waiter");
+    waiter.textContent = item.name;
+    waiter.id = item.id;
+    waiterContainer.appendChild(waiter);
+
+    waiter.onclick = () => {
+      console.log(item);
+
+      createWaiterEditor(item, editor_container);
+    };
+  });
+
+  const addWaiter = document.createElement("div");
+  addWaiter.classList.add("waiter");
+  addWaiter.classList.add("waiter-add");
+  addWaiter.textContent = "הוסף מלצר";
+  addWaiter.onclick = () => {
+    const waiter = { id: "new", name: "", admin: 0 };
+    createWaiterEditor(waiter, editor_container);
+  };
+
+  list_container.appendChild(addWaiter);
+}
+
+function createWaiterEditor(waiter, container) {
+  container.innerHTML = "";
+
+  container.appendChild(createWaiterNamer(waiter));
+  container.appendChild(createWaiterPrivilege(waiter));
+  container.appendChild(createWaiterControls(waiter));
+}
+
+function createWaiterNamer(waiter) {
+  const container = document.createElement("div");
+  container.classList.add("waiter-editor-container");
+
+  const title = document.createElement("h3");
+  title.textContent = ":שם";
+
+  const input = document.createElement("input");
+  input.classList.add("waiter-name-input");
+  input.value = waiter.name;
+  input.dir = "rtl";
+  input.id = "waiter-namer";
+
+  container.appendChild(title);
+  container.appendChild(input);
+  return container;
+}
+
+function createWaiterPrivilege(waiter) {
+  const container = document.createElement("div");
+  container.classList.add("waiter-editor-container");
+
+  const title = document.createElement("h3");
+  title.textContent = ":פריבילגיות";
+
+  const inputBox = document.createElement("div");
+  inputBox.appendChild(createWaiterPrivilegesListItem(waiter));
+
+  container.appendChild(title);
+  container.appendChild(inputBox);
+  return container;
+}
+
+function createWaiterPrivilegesListItem(waiter) {
+  const container = document.createElement("label"); // clickable label wrapper
+  const labelText = "הכל";
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.name = "privileges";
+  checkbox.id = "admin";
+  if (waiter.admin) {
+    checkbox.checked = true;
+  }
+  // Add checkbox + text to label
+  container.appendChild(document.createTextNode(labelText + " "));
+  container.appendChild(checkbox);
+
+  return container;
+}
+
+function createWaiterControls(waiter) {
+  const container = document.createElement("div");
+  container.classList.add("waiter-controls");
+
+  const send = document.createElement("button");
+  send.classList.add("waiter-button");
+  send.textContent = "שמור שינויים";
+  send.onclick = () => {
+    const admin = document.getElementById("admin").checked;
+    const name = document.getElementById("waiter-namer").value;
+
+    console.log(admin, name);
+
+    if (waiter.id != "new") {
+      scripts.routes.updateWaiter({
+        id: waiter.id,
+        name: name,
+        admin: Number(admin),
+      });
+      document.getElementById(waiter.id).textContent = name;
+
+      createWaiterList(
+        document.getElementById("waiter-list"),
+        document.getElementById("waiter-editor"),
+      );
+
+      return;
+    }
+
+    scripts.routes.createWaiter({ name: name, admin: Number(admin) });
+    createWaiterList(
+      document.getElementById("waiter-list"),
+      document.getElementById("waiter-editor"),
+    );
+  };
+
+  const dismiss = document.createElement("button");
+  dismiss.classList.add("waiter-button");
+  dismiss.classList.add("dismiss");
+  dismiss.textContent = "בטל שינויים";
+  dismiss.onclick = () => {
+    createWaiterEditor(waiter, document.getElementById("waiter-editor"));
+  };
+
+  container.appendChild(send);
+  container.appendChild(dismiss);
+  return container;
+}
+
+export default {
+  getOrderTotal,
+  createSections,
+  createGrid,
+  renderGrid,
+  createWaiterList,
+};

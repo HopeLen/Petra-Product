@@ -1,8 +1,8 @@
 import scripts from "./scripts.js";
 
-function title(id, container) {
-  const title = document.createElement("h1");
-  title.textContent = ":" + id;
+function title(name, container, type = "h1") {
+  const title = document.createElement(type);
+  title.textContent = ":" + name;
 
   container.appendChild(title);
 }
@@ -116,12 +116,35 @@ async function displayWaiters(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
   title(id, container);
+
+  //Main content box
+  const content = document.createElement("div");
+  content.id = "waiters-content";
+  content.classList.add("waiter-content");
+
+  //Waiter editor
+  const waiter_editor = document.createElement("div");
+  waiter_editor.id = "waiter-editor";
+  waiter_editor.classList.add("waiter-editor");
+  content.appendChild(waiter_editor);
+
+  //Waiter list
+  const waiter_list = document.createElement("div");
+  waiter_list.id = "waiter-list";
+  waiter_list.classList.add("waiter-list");
+  content.appendChild(waiter_list);
+
+  container.appendChild(content);
+
+  scripts.helpers.createWaiterList(waiter_list, waiter_editor);
 }
+
 async function displayPrinters(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
   title(id, container);
 }
+
 async function displayInfo(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
@@ -135,4 +158,5 @@ export default {
   displayPrinters,
   displayWaiters,
   displayTables,
+  title,
 };

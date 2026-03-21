@@ -1,0 +1,58 @@
+.waiter-content {
+  display: flex;
+  gap: 10px;
+}
+
+.waiter-editor {
+  border: 2px solid black;
+  border-radius: 10px;
+  gap: 10px;
+  padding: 10px;
+}
+
+.waiter-list {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid black;
+  border-radius: 10px;
+  padding: 10px;
+  gap: 5px;
+}
+
+.waiter {
+  display: flex;
+  justify-content: center;
+  background-color: lightgray;
+  border: 2px solid black;
+  border-radius: 10px;
+}
+
+.waiter-editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+
+.waiter-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.waiter-button {
+  background-color: #3c8dde;
+  color: #f6f1eb;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 5px;
+  margin-top: 20px;
+}
+
+.waiter-button.dismiss {
+  background-color: #cd6155;
+}
+
+.waiter-add {
+  background-color: #aee1d2;
+}
