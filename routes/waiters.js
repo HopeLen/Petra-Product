@@ -37,7 +37,8 @@ router.patch("/patch-waiter", express.json(), async (req, res) => {
   waiter = req.body;
   console.log(waiter);
 
-  pool.query("UPDATE users SET name=?, admin=? WHERE id=?", [
+  pool.query("UPDATE users SET id=?, name=?, admin=? WHERE id=?", [
+    waiter.code,
     waiter.name,
     waiter.admin,
     waiter.id,
@@ -46,14 +47,14 @@ router.patch("/patch-waiter", express.json(), async (req, res) => {
 
 router.post("/post-waiter", express.json(), async (req, res) => {
   try {
-    const { name, admin } = req.body;
+    const { code, name, admin } = req.body;
 
     const sql = `
-      INSERT INTO users (name, admin)
-      VALUES (?, ?)
+      INSERT INTO users (id, name, admin)
+      VALUES (?, ?, ?)
     `;
 
-    const result = await pool.execute(sql, [name, admin]);
+    const result = await pool.execute(sql, [code, name, admin]);
 
     return res.status(201).json({
       message: "Waiter created successfully",

@@ -12,7 +12,9 @@ async function getOrder(tableID) {
 
   const order = await response.json();
 
-  console.log(order);
+  order.order = await JSON.parse(order.order);
+
+  console.log("first: ", order);
   const response2 = await fetch(`/api/get-items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -26,7 +28,7 @@ async function getOrder(tableID) {
   renderOrderList(
     document.getElementById("current-order"),
     order.order,
-    mutability
+    mutability,
   );
   return order;
 }
@@ -56,7 +58,7 @@ function renderOrderList(ul, list, mutability = true) {
   `;
     li.onclick = async () => {
       const infoItem = await fetch(`/api/get-menu-item/${item.id}`).then(
-        (response) => response.json()
+        (response) => response.json(),
       );
       await createPopupFromItem(infoItem[0]);
       await delay(100);
@@ -96,7 +98,7 @@ async function getInfo(tableID, waiterID) {
   const waiter = document.getElementById("waiterID");
   console.log(waiterID);
   const waiterName = await fetch(`/api/get-waiter-name/${waiterID}`).then(
-    (res) => res.json()
+    (res) => res.json(),
   );
 
   console.log("This is the waiter's name: ");
@@ -127,7 +129,7 @@ async function getMenuSections(checked) {
     menu,
     map,
     document.getElementById("menu-sections"),
-    classList
+    classList,
   );
 }
 
@@ -190,7 +192,7 @@ function addItemToOrder(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -229,7 +231,7 @@ async function createPopupFromItem(item) {
         key,
         tranlation[key],
         item.extra[key].items,
-        item.extra[key].type
+        item.extra[key].type,
       );
     });
   }
@@ -259,7 +261,7 @@ function addSimpleItem(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -287,7 +289,7 @@ function addComplexItem(item) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
 }
 
@@ -340,11 +342,11 @@ async function createInfo(tableId) {
 async function sendOrder(tableID) {
   console.log("Sending order to table: ", tableID);
   const existingOrder = await fetch(`/api/get-table-order/${tableID}`).then(
-    (response) => response.json()
+    (response) => response.json(),
   );
   let newOrder;
   console.log("existingOrder", existingOrder);
-  if (existingOrder.order.length !== 0) {
+  if (existingOrder.order !== "[]") {
     newOrder = existingOrder.order;
     currentOrder.forEach((item) => {
       addOrIncrease(newOrder, item);
@@ -364,7 +366,7 @@ async function sendOrder(tableID) {
   renderOrderList(
     document.getElementById("current-order"),
     newOrder,
-    mutability
+    mutability,
   );
 
   sendingTheOrder(tableID, newOrder);
@@ -376,7 +378,7 @@ async function sendOrder(tableID) {
   renderOrderList(
     document.getElementById("chosen-items"),
     currentOrder,
-    mutability
+    mutability,
   );
   console.log("Writing the price");
   writePrice(tableID);
@@ -386,7 +388,7 @@ async function sendOrder(tableID) {
 
 async function getTableStatus(tableID) {
   const status = await fetch(`/api/get-table-status/${tableID}`).then((res) =>
-    res.json()
+    res.json(),
   );
   console.log(status);
   return status;
@@ -410,14 +412,14 @@ async function tableStatusChange(tableID, targetStatus) {
 
 async function getAllPrinters() {
   const printers = await fetch(`/api/get-all-printers`).then((res) =>
-    res.json()
+    res.json(),
   );
   return printers;
 }
 
 async function getItemPrinters(id) {
   const itemPrinters = await fetch(`/api/get-items-printers/${id}`).then(
-    (res) => res.json()
+    (res) => res.json(),
   );
   return itemPrinters;
 }
@@ -519,9 +521,12 @@ async function sendingTheOrder(tableID, newOrder) {
 
 async function getPrice(tableID) {
   const order = await fetch(`/api/get-table-order/${tableID}`).then(
-    (response) => response.json()
+    (response) => response.json(),
   );
   let total = 0;
+  console.log(order);
+
+  order.order = JSON.parse(order.order);
 
   order.order.forEach((item) => {
     total += item.price * item.amount;

@@ -73,3 +73,7 @@
   border: 10px;
   direction: rtl;
 }
+
+.hide {
+  display: none;
+}

@@ -91,7 +91,7 @@ function fixPopup(card) {
   totalPrice.textContent =
     "לתשלום: " +
     Math.round(
-      scripts.helpers.getOrderTotal(card.order) * card.information.percent,
+      scripts.helpers.getOrderTotal(card.order) * card.tip_multiplier,
     ) +
     "₪";
   payBox.appendChild(totalPrice);
@@ -101,7 +101,7 @@ function fixPopup(card) {
     "טיפ: " +
     String(
       Math.round(
-        scripts.helpers.getOrderTotal(card.order) * card.information.percent -
+        scripts.helpers.getOrderTotal(card.order) * card.tip_multiplier -
           scripts.helpers.getOrderTotal(card.order),
       ),
     ) +

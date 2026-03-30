@@ -3,18 +3,19 @@ const router = express.Router();
 const pool = require("./mariadb");
 
 router.post("/post-table-info", express.json(), async (req, res) => {
-  const data = req.body;
+  const { waiter, table, openTime, openDate } = req.body;
+  console.log(typeof table);
 
   try {
     const result = await pool.query(
-      `INSERT INTO orders (information)
-   VALUES (?)`,
-      [JSON.stringify(data)],
+      `INSERT INTO orders (waiter_id, table_id, open_time, date)
+   VALUES (?, ?, ?, ?)`,
+      [Number(waiter), table, openTime, openDate],
     );
 
     pool.query("UPDATE `tables` SET `information` = ? WHERE id = ?", [
       Number(result.insertId),
-      data.table,
+      table,
     ]);
 
     console.log("Result:", result);
@@ -96,35 +97,22 @@ router.post("/set-order-status", express.json(), async (req, res) => {
     );
 
     if (targetStatus === "BILLED") {
-      let row = await pool
-        .query("SELECT `information` FROM `orders` WHERE orderID = ?", orderID)
-        .then((res) => res[0])
-        .then((res) => res.information);
-      row.percent = percent;
       await pool.query(
-        "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
-        [row, orderID],
+        "UPDATE `orders` SET `tip_multiplier` = ? WHERE orderID = ?",
+        [percent, orderID],
       );
     }
 
     if (targetStatus === "AWAITING") {
-      let row = await pool
-        .query("SELECT `information` FROM `orders` WHERE orderID = ?", orderID)
-        .then((res) => res[0])
-        .then((res) => res.information);
-
-      console.log(row);
-      row.closeTime = new Date().toLocaleTimeString("en-GB", {
+      const close_time = new Date().toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       });
-      row.closeDate = new Date().toLocaleDateString("en-GB");
-      console.log(row);
 
       await pool.query(
-        "UPDATE `orders` SET `information` = ? WHERE orderID = ?",
-        [row, orderID],
+        "UPDATE `orders` SET `close_time` = ? WHERE orderID = ?",
+        [close_time, orderID],
       );
     }
 

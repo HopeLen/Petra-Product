@@ -149,6 +149,12 @@ async function createWaiter(waiter) {
   return await res.json();
 }
 
+async function getPrinters() {
+  return await fetch("/api/get-all-printers")
+    .then((res) => res.json())
+    .catch((err) => console.error(err));
+}
+
 export default {
   userAdmin,
   getLogo,
@@ -165,4 +171,5 @@ export default {
   getWaiters,
   updateWaiter,
   createWaiter,
+  getPrinters,
 };

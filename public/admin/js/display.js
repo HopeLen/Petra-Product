@@ -22,6 +22,7 @@ async function displayZClose(id) {
   searchBar.type = "number";
   searchBar.placeholder = "הכנס מספר הזמנה";
   searchBar.id = id;
+  searchBar.style.textAlign = "center";
 
   container.appendChild(searchBar);
 
@@ -44,11 +45,11 @@ async function displayZClose(id) {
     cardBody.classList.add("card-body");
 
     cardHeader.textContent = "מספר הזמנה: " + card.orderID;
-    cardTable.textContent = "מספר שולחן: " + card.information.table;
+    cardTable.textContent = "מספר שולחן: " + card.table_id;
     cardBody.textContent =
       "סכום: " +
       Math.round(
-        scripts.helpers.getOrderTotal(card.order) * card.information.percent,
+        scripts.helpers.getOrderTotal(card.order) * card.tip_multiplier,
       ) +
       ".00₪";
 
@@ -72,7 +73,10 @@ async function displayZClose(id) {
     console.log(value);
 
     tables.forEach((table) => {
+      console.log("AHHH");
+      console.log(table.orderID);
       const isVisible = String(table.orderID).includes(value);
+      console.log(isVisible);
       document
         .getElementById(table.orderID)
         .classList.toggle("hide", !isVisible);
@@ -143,6 +147,27 @@ async function displayPrinters(id) {
   const container = document.getElementById("content");
   container.innerHTML = "";
   title(id, container);
+
+  //main content box
+  const content = document.createElement("div");
+  content.id = "waiters-content";
+  content.classList.add("waiter-content");
+
+  //Waiter editor
+  const printer_ip = document.createElement("div");
+  printer_ip.id = "waiter-editor";
+  printer_ip.classList.add("waiter-editor");
+  content.appendChild(printer_ip);
+
+  //Waiter list
+  const printer_name = document.createElement("div");
+  printer_name.id = "waiter-list";
+  printer_name.classList.add("waiter-list");
+  content.appendChild(printer_name);
+
+  container.appendChild(content);
+
+  scripts.helpers.createPrinters(printer_ip, printer_name);
 }
 
 async function displayInfo(id) {

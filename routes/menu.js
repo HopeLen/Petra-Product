@@ -7,9 +7,9 @@ router.post("/get-items", async (req, res) => {
   let conn;
   try {
     conn = await pool.getConnection();
-    const { order } = req.body;
+    const order = req.body;
 
-    const ids = order.order.map((item) => item.itemID);
+    const ids = order.order.order.map((item) => item.itemID);
     if (ids.length === 0) return res.json([]);
 
     const placeholders = ids.map(() => "?").join(",");
@@ -40,7 +40,7 @@ router.get("/get-translation-map", async (req, res) => {
 router.get("/get-menu-sections-KITCHEN", async (req, res) => {
   try {
     const rows = await pool.query(
-      "SELECT DISTINCT section_id FROM menu WHERE type = 'KITCHEN' ORDER BY section_id ASC"
+      "SELECT DISTINCT section_id FROM menu WHERE type = 'KITCHEN' ORDER BY section_id ASC",
     );
 
     const sectionIds = rows.map((r) => Number(r.section_id));
@@ -57,7 +57,7 @@ router.get("/get-menu-sections-KITCHEN", async (req, res) => {
 router.get("/get-menu-sections-BAR", async (req, res) => {
   try {
     const rows = await pool.query(
-      "SELECT DISTINCT section_id FROM menu WHERE type = 'BAR' ORDER BY section_id ASC"
+      "SELECT DISTINCT section_id FROM menu WHERE type = 'BAR' ORDER BY section_id ASC",
     );
 
     const sectionIds = rows.map((r) => Number(r.section_id));

@@ -159,8 +159,7 @@ router.delete("/delete-table/:tableID", express.json(), async (req, res) => {
 router.post("/add-table", express.json(), async (req, res) => {
   const { id, section_id, location, shape } = req.body;
 
-  console.log(id, section_id, location, shape)
-  
+  console.log(id, section_id, location, shape);
 
   if (!section_id || !location || !shape) {
     return res.status(400).json({ error: "Missing fields" });
@@ -184,8 +183,4 @@ router.post("/add-table", express.json(), async (req, res) => {
   });
 });
 
-
-
 module.exports = router;
-
-

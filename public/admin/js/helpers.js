@@ -2,8 +2,11 @@ import routes from "./routes.js";
 import scripts from "./scripts.js";
 
 function getOrderTotal(order) {
+  console.log(order);
   let total = 0;
   order.forEach((item) => {
+    console.log("price:", item.price);
+    console.log("amount:", item.amount);
     total += item.price * item.amount;
   });
   return total;
@@ -327,8 +330,28 @@ function createWaiterEditor(waiter, container) {
   container.innerHTML = "";
 
   container.appendChild(createWaiterNamer(waiter));
+  container.appendChild(createWaiterCode(waiter));
   container.appendChild(createWaiterPrivilege(waiter));
   container.appendChild(createWaiterControls(waiter));
+}
+
+function createWaiterCode(waiter) {
+  const container = document.createElement("div");
+  container.classList.add("waiter-editor-container");
+
+  const title = document.createElement("h3");
+  title.textContent = ":קוד";
+
+  const input = document.createElement("input");
+  input.classList.add("waiter-name-input");
+  input.value = waiter.id;
+  input.dir = "rtl";
+  input.id = "waiter-code";
+  input.type = "number";
+
+  container.appendChild(title);
+  container.appendChild(input);
+  return container;
 }
 
 function createWaiterNamer(waiter) {
@@ -392,12 +415,14 @@ function createWaiterControls(waiter) {
   send.onclick = () => {
     const admin = document.getElementById("admin").checked;
     const name = document.getElementById("waiter-namer").value;
+    const code = document.getElementById("waiter-code").value;
 
     console.log(admin, name);
 
     if (waiter.id != "new") {
       scripts.routes.updateWaiter({
         id: waiter.id,
+        code: code,
         name: name,
         admin: Number(admin),
       });
@@ -411,7 +436,11 @@ function createWaiterControls(waiter) {
       return;
     }
 
-    scripts.routes.createWaiter({ name: name, admin: Number(admin) });
+    scripts.routes.createWaiter({
+      code: code,
+      name: name,
+      admin: Number(admin),
+    });
     createWaiterList(
       document.getElementById("waiter-list"),
       document.getElementById("waiter-editor"),
@@ -431,10 +460,27 @@ function createWaiterControls(waiter) {
   return container;
 }
 
+async function createPrinters(printer_ip, printer_name) {
+  const printers = await scripts.routes.getPrinters();
+  console.log(printers);
+
+  printers.forEach((printer) => {
+    printer_ip.appendChild(labelMaker(printer.address));
+    printer_name.appendChild(labelMaker(printer.name));
+  });
+}
+
+function labelMaker(text) {
+  const label = document.createElement("label");
+  label.textContent = text;
+  return label;
+}
+
 export default {
   getOrderTotal,
   createSections,
   createGrid,
   renderGrid,
   createWaiterList,
+  createPrinters,
 };
